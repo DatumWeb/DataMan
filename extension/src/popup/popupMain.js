@@ -1,3 +1,4 @@
+/* Toolbar popup — smoke tests + future shortcuts */
 function show(el, text) {
   el.textContent = text;
 }

@@ -19,7 +19,18 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["src/contentScript.js"],
+      "js": [
+        "src/content/namespace.js",
+        "src/content/config.js",
+        "src/content/gameState.js",
+        "src/content/platforms.js",
+        "src/content/physics.js",
+        "src/content/input.js",
+        "src/content/overlay.js",
+        "src/content/render.js",
+        "src/content/bridge.js",
+        "src/content/bootstrap.js"
+      ],
       "run_at": "document_idle"
     }
   ]

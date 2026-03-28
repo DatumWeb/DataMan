@@ -8,9 +8,18 @@
   <body>
     <main>
       <h1>DataMan</h1>
-      <p class="muted">Popup shell — wiring OK if this opens.</p>
+      <p class="muted">Storage + messaging smoke test.</p>
       <button id="ping" type="button">Ping background</button>
       <p id="ping-result" class="muted" aria-live="polite"></p>
+
+      <button id="summary" type="button">Load state summary</button>
+      <pre id="summary-out" class="mono muted" aria-live="polite"></pre>
+
+      <div class="row">
+        <button id="sample-passive" type="button">Sample passive event</button>
+        <button id="sample-active" type="button">Sample active extract</button>
+      </div>
+      <p id="sample-result" class="muted" aria-live="polite"></p>
     </main>
     <script src="popup.js"></script>
   </body>

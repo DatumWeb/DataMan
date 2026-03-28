@@ -16,6 +16,15 @@ h1 {
   margin: 8px 0;
 }
 
+.muted strong {
+  color: #334155;
+  font-weight: 600;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
 .mono {
   font-family: ui-monospace, monospace;
   font-size: 0.7rem;

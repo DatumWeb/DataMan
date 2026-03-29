@@ -23,7 +23,13 @@
     },
     dropThroughUntil: 0,
     lastPlatformRefresh: 0,
-    running: true
+    running: true,
+    /** Throttle passive domain + distance batching (not persisted). */
+    passiveLogMeta: {
+      distanceBuffer: 0,
+      /** Avoid duplicate `domain_visit` rows for the same host in one load. */
+      domainVisitSentFor: null
+    }
   };
 
   DM.runtime = {

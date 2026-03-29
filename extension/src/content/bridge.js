@@ -3,8 +3,6 @@
  * Page world never touches storage APIs for extension data directly.
  */
 (function (DM) {
-  const { state } = DM;
-
   DM.bridge = {
     async syncCharacterFromBackground() {
       try {
@@ -13,6 +11,7 @@
         const id = res.state.activeCharacterId;
         const ch = res.state.characters?.[id];
         if (!ch) return;
+        const { state } = DM;
         if (typeof ch.skin === "string") state.visuals.skin = ch.skin;
         if (typeof ch.colorHex === "string") state.visuals.color = ch.colorHex;
         const g = Number(ch.physics?.gravity ?? ch.gravity);
@@ -37,6 +36,29 @@
       } catch (e) {
         console.warn("[DataMan] CS_HELLO failed", e);
       }
+    },
+
+    /**
+     * Fire-and-forget passive row (`collection_mode: passive` in storage).
+     * @param {object} payload eventType, domain, pageUrl, optional bbox, elementTag, extra, …
+     */
+    logPassiveEvent(payload) {
+      browser.runtime
+        .sendMessage({
+          type: "LOG_PASSIVE_EVENT",
+          ...payload
+        })
+        .catch(() => {});
+    },
+
+    /** Updates `stats.distancePx` only — does not append an event row. */
+    addDistancePx(deltaPx) {
+      browser.runtime
+        .sendMessage({
+          type: "ADD_DISTANCE_PX",
+          deltaPx
+        })
+        .catch(() => {});
     }
   };
 })(globalThis.DataMan);

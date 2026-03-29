@@ -10,11 +10,12 @@ Loaded **in order** (see `manifest.json`). All attach to `globalThis.DataMan`.
 | `content/config.js` | Constants + small helpers (`util.clamp`, `bestSelectorForElement`) |
 | `content/gameState.js` | Mutable `DataMan.state`, `DataMan.runtime` (canvas handles) |
 | `content/platforms.js` | `DataMan.platforms.refresh` — DOM rects + floor |
+| `content/bridge.js` | `DataMan.bridge` — messages to **background** (storage lives there) |
+| `content/passiveLog.js` | Passive `LOG_PASSIVE_EVENT` (jump / distance / domain_visit) |
 | `content/physics.js` | `DataMan.physics.*` — movement, jump, collision, spawn |
 | `content/input.js` | `DataMan.input.wire` — keyboard |
 | `content/overlay.js` | `DataMan.overlay.install` — canvas layer |
 | `content/render.js` | `DataMan.render` — draw + game loop |
-| `content/bridge.js` | `DataMan.bridge` — messages to **background** (storage lives there) |
 | `content/bootstrap.js` | Entry: `DataMan.bootstrap()` |
 
 **Note:** Extension storage is only in the background script. The page uses `bridge` to sync character look/physics.

@@ -1,5 +1,5 @@
 (function (DM) {
-  const { state, runtime, platforms, physics } = DM;
+  const { state, runtime, platforms, physics, passiveLog } = DM;
 
   function drawPlatforms() {
     const { ctx } = runtime;
@@ -82,6 +82,8 @@
       platforms.refresh();
       state.lastPlatformRefresh = t;
     }
+
+    passiveLog.maybeRegisterDomainVisit();
 
     physics.update();
 

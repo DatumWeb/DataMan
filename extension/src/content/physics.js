@@ -60,20 +60,27 @@
     tryJump() {
       const { player, physics } = state;
       if (!player.onGround) return;
+      const jumpingFrom = player.currentPlatform;
       player.vy = -physics.jumpStrength;
       player.onGround = false;
       player.currentPlatform = null;
+      if (jumpingFrom) {
+        DM.passiveLog.onJump(jumpingFrom);
+      }
     },
 
     update() {
       const { player, physics } = state;
       const prevY = player.y;
+      const prevX = player.x;
 
       processInput();
       player.vy += physics.gravity;
       player.x += player.vx;
       player.y += player.vy;
       player.x = util.clamp(player.x, 0, Math.max(0, window.innerWidth - player.w));
+
+      DM.passiveLog.recordTravel(player.x - prevX);
 
       const ground = findGroundCollision(player, prevY);
       if (ground) {

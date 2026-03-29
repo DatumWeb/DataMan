@@ -16,14 +16,18 @@
       <button id="ping" type="button">Ping background</button>
       <p id="ping-result" class="muted" aria-live="polite"></p>
 
-      <button id="summary" type="button">Load state summary</button>
-      <pre id="summary-out" class="mono muted" aria-live="polite"></pre>
+      <button id="summary" type="button">Refresh stats</button>
+      <div id="summary-out" class="stats-panel muted" aria-live="polite"></div>
 
       <div class="row">
         <button id="sample-passive" type="button">Sample passive event</button>
         <button id="sample-active" type="button">Sample active extract</button>
       </div>
       <p id="sample-result" class="muted" aria-live="polite"></p>
+
+      <button id="load-events" type="button">Show all events (this character)</button>
+      <p id="events-status" class="muted" aria-live="polite"></p>
+      <div id="events-out" class="events-panel" aria-live="polite"></div>
     </main>
     <script src="popup/popupMain.js"></script>
   </body>

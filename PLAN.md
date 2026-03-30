@@ -58,7 +58,7 @@ Use `- [ ]` → `- [x]` when a row is done. Work in small slices; commit when **
 ## 5. Passive vs active data collection
 
 - [x] **Passive:** log events automatically (e.g. jump left element, domain visit, distance) with `collection_mode = passive` (or equivalent in JSON)
-- [ ] **Active extract:** bind **collection move** key (e.g. **E**); on success log with `collection_mode = active_extract` and `event_type = extraction` (plus text preview, bbox, selector as you need)
+- [x] **Active extract:** Up Arrow or `W` extracts the current platform; logs with `collection_mode = active_extract` and `event_type = extraction` (includes text preview, bbox, selector). TODO later: ~1s cast + small animation.
 - [x] Every event row includes **`character_id`** of the active character
 - [x] Cap / prune log length so storage stays bounded (max events, FIFO, etc.)
 

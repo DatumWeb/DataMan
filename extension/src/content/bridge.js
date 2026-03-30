@@ -59,6 +59,19 @@
           deltaPx
         })
         .catch(() => {});
+    },
+
+    /**
+     * Fire-and-forget active extraction row.
+     * Intended to map to SQL: data_collection_events(collection_mode='active_extract').
+     */
+    logActiveExtractEvent(payload) {
+      browser.runtime
+        .sendMessage({
+          type: "LOG_ACTIVE_EXTRACT_EVENT",
+          ...payload
+        })
+        .catch(() => {});
     }
   };
 })(globalThis.DataMan);

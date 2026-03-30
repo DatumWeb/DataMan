@@ -20,14 +20,17 @@
             "ArrowLeft",
             "ArrowRight",
             "ArrowDown",
+            "ArrowUp",
             "KeyA",
             "KeyD",
             "KeyS",
+            "KeyW",
             "Space"
           ];
           if (!codes.includes(event.code)) return;
 
           if (event.code === "Space") event.preventDefault();
+          if (event.code === "ArrowUp") event.preventDefault();
 
           state.keys.add(event.code);
 
@@ -36,6 +39,10 @@
           }
           if (event.code === "ArrowDown" || event.code === "KeyS") {
             DM.physics.triggerDropThrough();
+          }
+
+          if (event.code === "ArrowUp" || event.code === "KeyW") {
+            DM.activeExtract.tryExtract(event.code);
           }
         },
         true

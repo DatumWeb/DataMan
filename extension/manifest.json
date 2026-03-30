@@ -27,6 +27,7 @@
         "src/content/bridge.js",
         "src/content/passiveLog.js",
         "src/content/physics.js",
+        "src/content/activeExtract.js",
         "src/content/input.js",
         "src/content/overlay.js",
         "src/content/render.js",

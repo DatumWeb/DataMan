@@ -28,6 +28,7 @@ function defaultCharacter(id) {
       totalExtractions: 0,
       domainsVisitedCount: 0,
       jumpsFromTag: {},
+      extractionByTag: {},
       visitedDomains: [],
       updatedAtMs: now
     },
@@ -56,6 +57,10 @@ function ensureCharacterShape(c) {
   mergedStats.jumpsFromTag = {
     ...(base.stats.jumpsFromTag || {}),
     ...(c?.stats?.jumpsFromTag || {})
+  };
+  mergedStats.extractionByTag = {
+    ...(base.stats.extractionByTag || {}),
+    ...(c?.stats?.extractionByTag || {})
   };
   mergedStats.visitedDomains = Array.isArray(c?.stats?.visitedDomains)
     ? c.stats.visitedDomains
@@ -153,6 +158,25 @@ function applyPassiveEventEffects(ch, row) {
   }
 }
 
+function applyActiveExtractEventEffects(ch, row) {
+  if (row.collectionMode !== "active_extract") return;
+  if (row.eventType !== "extraction") return;
+
+  ch.stats.totalExtractions = (ch.stats.totalExtractions || 0) + 1;
+
+  const tag = row.elementTag || "UNKNOWN";
+  ch.stats.extractionByTag = ch.stats.extractionByTag || {};
+  ch.stats.extractionByTag[tag] = (ch.stats.extractionByTag[tag] || 0) + 1;
+
+  // Keep domainsVisitedCount correct even if a domain_visit row wasn't logged yet.
+  const host = row.domain || "";
+  ch.stats.visitedDomains = Array.isArray(ch.stats.visitedDomains) ? ch.stats.visitedDomains : [];
+  if (host && !ch.stats.visitedDomains.includes(host)) {
+    ch.stats.visitedDomains.push(host);
+    ch.stats.domainsVisitedCount = ch.stats.visitedDomains.length;
+  }
+}
+
 /** Appends a row matching data_collection_events; trims FIFO past cap. */
 function appendEvent(state, fields) {
   const cid = fields.characterId || state.activeCharacterId;
@@ -180,7 +204,8 @@ function appendEvent(state, fields) {
     extra: fields.extra != null ? fields.extra : null
   };
 
-  applyPassiveEventEffects(ch, row);
+  if (collectionMode === "passive") applyPassiveEventEffects(ch, row);
+  if (collectionMode === "active_extract") applyActiveExtractEventEffects(ch, row);
 
   ch.events.push(row);
   while (ch.events.length > MAX_EVENTS_PER_CHARACTER) {
@@ -345,6 +370,24 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       state = appendEvent(state, {
         collectionMode: "passive",
         eventType: message.eventType,
+        domain: message.domain,
+        pageUrl: message.pageUrl,
+        elementTag: message.elementTag,
+        selectorGuess: message.selectorGuess,
+        bbox: message.bbox,
+        textPreview: message.textPreview,
+        extra: message.extra,
+        characterId: message.characterId
+      });
+      await saveState(state);
+      return { ok: true };
+    }
+
+    if (type === "LOG_ACTIVE_EXTRACT_EVENT") {
+      let state = await loadState();
+      state = appendEvent(state, {
+        collectionMode: "active_extract",
+        eventType: "extraction",
         domain: message.domain,
         pageUrl: message.pageUrl,
         elementTag: message.elementTag,

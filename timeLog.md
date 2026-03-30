@@ -3,7 +3,7 @@
 | 3/25/2026 | Created Initial Idea, Post about it, repo and time log creation  | 4 |
 | 3/26/2026 | Spent some time researching firefox extensions | 2 |
 | 3/27/2026 | project initial desgin | 1 |
-| 3/28/2026 | Created rough character and rough movement extension | 5 |
+| 3/28/2026 | Created rough character and rough movement extension, adjusted the data and how it is being shown to the user | 8 |
 | 3/29/2026 |  |  |
 | 3/30/2026 |  |  |
 | 3/31/2026 |  |  |

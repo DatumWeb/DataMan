@@ -6,28 +6,44 @@
     <link rel="stylesheet" href="popup.css" />
   </head>
   <body>
-    <main>
-      <h1>DataMan</h1>
-      <p class="muted">
-        Storage + messaging smoke test. The <strong>avatar is not here</strong> — it draws on
-        <strong>normal website tabs</strong> (green “DM”; ←/→ A/D, Space, S/↓). Open e.g.
-         <span class="nowrap">example.com</span> after reloading the extension.
-      </p>
-      <button id="ping" type="button">Ping background</button>
-      <p id="ping-result" class="muted" aria-live="polite"></p>
+    <main class="panel">
+      <h1 class="title">DataMan</h1>
 
-      <button id="summary" type="button">Refresh stats</button>
-      <div id="summary-out" class="stats-panel muted" aria-live="polite"></div>
+      <section class="section">
+        <h2 class="section-title">Character selection</h2>
+        <div id="character-grid" class="character-grid" aria-label="Character selection"></div>
+      </section>
 
-      <div class="row">
-        <button id="sample-passive" type="button">Sample passive event</button>
-        <button id="sample-active" type="button">Sample active extract</button>
-      </div>
-      <p id="sample-result" class="muted" aria-live="polite"></p>
+      <section class="section">
+        <h2 id="stats-title" class="section-title">Character's stats</h2>
+        <div id="stats-quick" class="quick-stats" aria-live="polite">
+          <div class="stat-box">
+            <span class="label">Total jumps</span>
+            <span id="stat-jumps" class="value">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">Pixels</span>
+            <span id="stat-pixels" class="value">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">Domains visited</span>
+            <span id="stat-domains" class="value">0</span>
+          </div>
+          <div class="stat-box">
+            <span class="label">Total extractions</span>
+            <span id="stat-extractions" class="value">0</span>
+          </div>
+        </div>
+      </section>
 
-      <button id="load-events" type="button">Show all events (this character)</button>
-      <p id="events-status" class="muted" aria-live="polite"></p>
-      <div id="events-out" class="events-panel" aria-live="polite"></div>
+      <section class="section">
+        <div class="actions">
+          <button id="view-all-events" type="button">View all tracked event data</button>
+          <button id="view-extracted" type="button">View extracted data (clear)</button>
+        </div>
+        <p id="view-status" class="muted" aria-live="polite"></p>
+        <div id="data-view" class="events-panel" aria-live="polite"></div>
+      </section>
     </main>
     <script src="popup/popupMain.js"></script>
   </body>

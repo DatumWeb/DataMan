@@ -1,8 +1,9 @@
-const PLACEHOLDER_CHARACTERS = [
-  { id: "char-1", name: "Runner 1" },
-  { id: "char-2", name: "Runner 2" },
-  { id: "char-3", name: "Runner 3" },
-  { id: "char-4", name: "Runner 4" }
+const CHARACTER_TILES = [
+  { characterId: "char-default", name: "Runner" },
+  { characterId: "char-stickman", name: "StickMan" },
+  // Placeholders (same runner for now)
+  { characterId: "char-default", name: "Runner 2" },
+  { characterId: "char-default", name: "Runner 3" }
 ];
 
 let selectedCharacterIdx = 0;
@@ -18,7 +19,7 @@ function setStatus(text) {
 }
 
 function updateStatsTitle() {
-  const placeholder = PLACEHOLDER_CHARACTERS[selectedCharacterIdx];
+  const placeholder = CHARACTER_TILES[selectedCharacterIdx];
   const liveName = latestSummaryReadable?.displayName;
   const name = liveName || placeholder.name;
   el("stats-title").textContent = `${name}'s stats`;
@@ -28,18 +29,13 @@ function renderCharacterGrid() {
   const grid = el("character-grid");
   grid.textContent = "";
 
-  PLACEHOLDER_CHARACTERS.forEach((char, idx) => {
+  CHARACTER_TILES.forEach((char, idx) => {
     const b = document.createElement("button");
     b.type = "button";
     b.className = `character-tile${idx === selectedCharacterIdx ? " selected" : ""}`;
     b.textContent = char.name;
     b.addEventListener("click", () => {
-      selectedCharacterIdx = idx;
-      renderCharacterGrid();
-      updateStatsTitle();
-      setStatus(
-        "Placeholder selection only for now. Character switching will be wired to storage later."
-      );
+      setActiveCharacter(char.characterId, idx);
     });
     grid.appendChild(b);
   });
@@ -63,6 +59,10 @@ async function refreshSummary() {
       return;
     }
     latestSummaryReadable = res.summary.readable;
+    const activeId = latestSummaryReadable?.characterId;
+    const idx = CHARACTER_TILES.findIndex((t) => t.characterId === activeId);
+    if (idx >= 0) selectedCharacterIdx = idx;
+    renderCharacterGrid();
     setQuickStats(latestSummaryReadable);
     updateStatsTitle();
   } catch (error) {
@@ -70,6 +70,25 @@ async function refreshSummary() {
     setQuickStats(null);
     setStatus(error?.message || String(error));
     updateStatsTitle();
+  }
+}
+
+async function setActiveCharacter(characterId, idxToSelect) {
+  try {
+    const charIdx =
+      idxToSelect ?? CHARACTER_TILES.findIndex((t) => t.characterId === characterId);
+    if (charIdx >= 0) selectedCharacterIdx = charIdx;
+    renderCharacterGrid();
+
+    await browser.runtime.sendMessage({
+      type: "SET_ACTIVE_CHARACTER",
+      characterId
+    });
+
+    setStatus(`Switched to ${CHARACTER_TILES[selectedCharacterIdx].name}.`);
+    await refreshSummary();
+  } catch (error) {
+    setStatus(error?.message || String(error));
   }
 }
 

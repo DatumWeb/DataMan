@@ -30,6 +30,9 @@
         "src/content/activeExtract.js",
         "src/content/input.js",
         "src/content/overlay.js",
+        "src/content/skins/index.js",
+        "src/content/skins/basic.js",
+        "src/content/skins/stickman.js",
         "src/content/render.js",
         "src/content/bootstrap.js"
       ],

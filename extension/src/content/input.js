@@ -25,6 +25,8 @@
             "KeyD",
             "KeyS",
             "KeyW",
+            "ShiftLeft",
+            "ShiftRight",
             "Space"
           ];
           if (!codes.includes(event.code)) return;

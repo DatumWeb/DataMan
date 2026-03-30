@@ -5,6 +5,7 @@ const SCHEMA_VERSION = 1;
 const MAX_EVENTS_PER_CHARACTER = 800;
 
 const DEFAULT_CHARACTER_ID = "char-default";
+const STICKMAN_CHARACTER_ID = "char-stickman";
 
 /**
  * Mirrors dataman_storage_schema.sql (JSON, not SQLite).
@@ -43,7 +44,16 @@ function defaultState() {
     schemaVersion: SCHEMA_VERSION,
     activeCharacterId: id,
     characters: {
-      [id]: defaultCharacter(id)
+      [id]: defaultCharacter(id),
+      [STICKMAN_CHARACTER_ID]: {
+        ...defaultCharacter(STICKMAN_CHARACTER_ID),
+        displayName: "StickMan",
+        skin: "stickman",
+        colorHex: "#60a5fa",
+        gravity: 0.72,
+        jumpStrength: 12.2,
+        moveSpeed: 3.9
+      }
     },
     meta: {
       storageSelfTestAtMs: null
@@ -85,6 +95,17 @@ function ensureStateShape(raw) {
   }
   if (!Object.keys(characters).length) {
     characters[DEFAULT_CHARACTER_ID] = defaultCharacter(DEFAULT_CHARACTER_ID);
+  }
+  if (!characters[STICKMAN_CHARACTER_ID]) {
+    characters[STICKMAN_CHARACTER_ID] = {
+      ...defaultCharacter(STICKMAN_CHARACTER_ID),
+      displayName: "StickMan",
+      skin: "stickman",
+      colorHex: "#60a5fa",
+      gravity: 0.72,
+      jumpStrength: 12.2,
+      moveSpeed: 3.9
+    };
   }
 
   let activeCharacterId = raw.activeCharacterId;
@@ -329,6 +350,17 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
     if (type === "GET_STATE_SUMMARY") {
       const state = await loadState();
+      return { ok: true, summary: stateSummary(state) };
+    }
+
+    if (type === "SET_ACTIVE_CHARACTER") {
+      const nextId = String(message.characterId || "");
+      let state = await loadState();
+      if (!state.characters[nextId]) {
+        return { ok: false, error: "unknown_character" };
+      }
+      state.activeCharacterId = nextId;
+      await saveState(state);
       return { ok: true, summary: stateSummary(state) };
     }
 

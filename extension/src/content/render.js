@@ -1,9 +1,10 @@
 (function (DM) {
-  const { state, runtime, platforms, physics, passiveLog } = DM;
+  const { state, runtime, platforms, passiveLog, physics } = DM;
 
   function drawPlatforms() {
     const { ctx } = runtime;
     if (!ctx) return;
+
     ctx.save();
     ctx.strokeStyle = "rgba(255,255,255,0.14)";
     ctx.lineWidth = 1;
@@ -14,51 +15,12 @@
     ctx.restore();
   }
 
-  function drawPlayer() {
-    const { player } = state;
-    const { ctx } = runtime;
-    if (!ctx) return;
-
-    ctx.save();
-    ctx.fillStyle = state.visuals.color;
-
+  function drawPlayer(tSec) {
     const skin = state.visuals.skin;
-    if (skin === "circle") {
-      ctx.beginPath();
-      ctx.arc(player.x + player.w / 2, player.y + player.h / 2, player.w / 2, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (skin === "triangle") {
-      ctx.beginPath();
-      ctx.moveTo(player.x + player.w / 2, player.y);
-      ctx.lineTo(player.x + player.w, player.y + player.h);
-      ctx.lineTo(player.x, player.y + player.h);
-      ctx.closePath();
-      ctx.fill();
-    } else {
-      ctx.fillRect(player.x, player.y, player.w, player.h);
+    if (DM.skins?.draw) {
+      DM.skins.draw(skin, tSec);
+      return;
     }
-
-    ctx.strokeStyle = "rgba(0,0,0,0.35)";
-    ctx.lineWidth = 1;
-    if (skin === "circle") {
-      ctx.beginPath();
-      ctx.arc(player.x + player.w / 2, player.y + player.h / 2, player.w / 2, 0, Math.PI * 2);
-      ctx.stroke();
-    } else if (skin === "triangle") {
-      ctx.beginPath();
-      ctx.moveTo(player.x + player.w / 2, player.y);
-      ctx.lineTo(player.x + player.w, player.y + player.h);
-      ctx.lineTo(player.x, player.y + player.h);
-      ctx.closePath();
-      ctx.stroke();
-    } else {
-      ctx.strokeRect(player.x + 0.5, player.y + 0.5, player.w - 1, player.h - 1);
-    }
-
-    ctx.fillStyle = "rgba(255,255,255,0.9)";
-    ctx.font = "10px monospace";
-    ctx.fillText("DM", player.x + 5, player.y + 16);
-    ctx.restore();
   }
 
   function drawHud() {
@@ -78,18 +40,19 @@
     if (!state.running || !ctx || !canvas) return;
 
     const t = now ?? performance.now();
+    const tSec = t / 1000;
+
     if (t - state.lastPlatformRefresh > 750) {
       platforms.refresh();
       state.lastPlatformRefresh = t;
     }
 
     passiveLog.maybeRegisterDomainVisit();
-
     physics.update();
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlatforms();
-    drawPlayer();
+    drawPlayer(tSec);
     drawHud();
 
     runtime.rafId = requestAnimationFrame(gameLoop);

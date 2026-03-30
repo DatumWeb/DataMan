@@ -5,7 +5,7 @@
 | 3/27/2026 | project initial desgin | 1 |
 | 3/28/2026 | Created rough character and rough movement extension, adjusted the data and how it is being shown to the user | 8 |
 | 3/29/2026 |  |  |
-| 3/30/2026 | Added a basic extraction feature | 2 |
+| 3/30/2026 | Added a basic extraction feature, ui for popup | 2.5 |
 | 3/31/2026 |  |  |
 | 4/1/2026 |  |  |
 | 4/2/2026 |  |  |

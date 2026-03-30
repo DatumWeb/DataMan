@@ -64,21 +64,9 @@ Use `- [ ]` → `- [x]` when a row is done. Work in small slices; commit when **
 
 ---
 
-## 6. Character profiles & selection
-
-- [ ] Model **character** records: id, name, skin, color, physics fields
-- [ ] **Active character** id in global state (who is playing right now)
-- [ ] **Character selection UI** (popup and/or **Options** page): list characters, pick active, create/delete/edit
-- [ ] Switching character updates active id and reloads visuals/physics from that profile
-- [ ] Optional: “duplicate character”, reset stats per character
 
 ---
 
-## 7. Stats & achievements (game layer)
-
-- [ ] Aggregate from events or maintain counters: distance, jumps, extractions, domains visited, per-tag counts
-- [ ] Achievement rules (e.g. link jumps, distance milestones, domain count) — unlock + store timestamps
-- [ ] Show summary in **popup** (quick read)
 
 ---
 

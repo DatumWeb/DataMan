@@ -7,6 +7,10 @@
     DM.physics.spawnPlayerTopCenter();
     DM.platforms.refresh();
 
+    if (DM.skins.stickman?.preload) {
+      void DM.skins.stickman.preload();
+    }
+
     await DM.bridge.syncCharacterFromBackground();
     DM.render.startLoop();
 

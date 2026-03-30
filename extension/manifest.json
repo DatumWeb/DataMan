@@ -16,6 +16,19 @@
     "page": "src/options.html",
     "open_in_tab": true
   },
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/StickmanPack/Idle/thickIdleSheet.png",
+        "assets/StickmanPack/Idle/thinIdleSheet.png",
+        "assets/StickmanPack/Run/thickRunSheet.png",
+        "assets/StickmanPack/Run/thinRunSheet.png",
+        "assets/StickmanPack/Punch/thickPunchSheet.png",
+        "assets/StickmanPack/Punch/thinPunchSheet.png"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

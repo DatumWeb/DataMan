@@ -1,0 +1,33 @@
+# OS / filesystem noise
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node / JS
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build / packaging outputs
+dist/
+build/
+coverage/
+*.zip
+web-ext-artifacts/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Python cache (in case helper scripts are used)
+__pycache__/
+*.pyc

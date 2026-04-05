@@ -35,16 +35,20 @@
 
           state.keys.add(event.code);
 
-          const isSpace = state.physics.physicsMode === "space";
+          const isSpaceMode = state.physics.physicsMode === "space";
 
-          if (!isSpace && event.code === "Space") {
+          if (!isSpaceMode && event.code === "Space") {
             DM.physics.tryJump();
           }
-          if (!isSpace && (event.code === "ArrowDown" || event.code === "KeyS")) {
+          if (!isSpaceMode && (event.code === "ArrowDown" || event.code === "KeyS")) {
             DM.physics.triggerDropThrough();
           }
-          if (!isSpace && (event.code === "ArrowUp" || event.code === "KeyW")) {
+          if (!isSpaceMode && (event.code === "ArrowUp" || event.code === "KeyW")) {
             DM.activeExtract.tryExtract(event.code);
+          }
+
+          if (isSpaceMode && event.code === "Space") {
+            DM.screenshot.beginSelection();
           }
         },
         true
@@ -54,6 +58,10 @@
         "keyup",
         (event) => {
           state.keys.delete(event.code);
+
+          if (state.physics.physicsMode === "space" && event.code === "Space") {
+            DM.screenshot.finishSelection();
+          }
         },
         true
       );

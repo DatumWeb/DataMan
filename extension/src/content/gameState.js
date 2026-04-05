@@ -29,6 +29,11 @@
       color: "#4ade80"
     },
     activeCharacterId: null,
+    screenshot: {
+      selecting: false,
+      startX: 0,
+      startY: 0
+    },
     /** `Element` for the DOM platform being passed through, or `'VIEWPORT_FLOOR'`, or `null`. */
     dropThroughIgnoreKey: null,
     lastPlatformRefresh: 0,

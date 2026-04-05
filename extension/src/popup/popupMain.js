@@ -204,6 +204,45 @@ async function onViewExtracted() {
   }
 }
 
+async function onViewScreenshots() {
+  setStatus("Loading screenshots…");
+  try {
+    const res = await browser.runtime.sendMessage({ type: "GET_SCREENSHOTS" });
+    if (!res?.ok) {
+      throw new Error(res?.error || "Could not load screenshots.");
+    }
+    const shots = Array.isArray(res.screenshots) ? res.screenshots : [];
+    const view = el("data-view");
+    view.textContent = "";
+
+    if (!shots.length) {
+      renderEmpty("No screenshots yet. Use AstroMan + Space to capture.");
+      setStatus("0 screenshots.");
+      return;
+    }
+
+    setStatus(`${shots.length} screenshot(s).`);
+    for (const ss of shots) {
+      const card = document.createElement("div");
+      card.className = "screenshot-card";
+      const when = ss.takenAtMs ? new Date(ss.takenAtMs).toLocaleString() : "—";
+      card.innerHTML = `
+        <div class="screenshot-meta">${when} · ${ss.domain || "—"} · ${ss.rect?.w ?? "?"}×${ss.rect?.h ?? "?"}</div>
+      `;
+      if (ss.dataUrl) {
+        const img = document.createElement("img");
+        img.src = ss.dataUrl;
+        img.alt = `Screenshot from ${ss.domain || "unknown"}`;
+        card.appendChild(img);
+      }
+      view.appendChild(card);
+    }
+  } catch (error) {
+    renderEmpty("Could not load screenshots.");
+    setStatus(error?.message || String(error));
+  }
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   renderCharacterGrid();
   updateStatsTitle();
@@ -212,4 +251,5 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   el("view-all-events").addEventListener("click", onViewAllEvents);
   el("view-extracted").addEventListener("click", onViewExtracted);
+  el("view-screenshots").addEventListener("click", onViewScreenshots);
 });

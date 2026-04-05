@@ -1,8 +1,10 @@
 /* DataMan — background (event page). Storage + message protocol. */
 
 const STORAGE_KEY = "datamanState";
+const SCREENSHOTS_KEY = "datamanScreenshots";
 const SCHEMA_VERSION = 1;
 const MAX_EVENTS_PER_CHARACTER = 800;
+const MAX_SCREENSHOTS = 30;
 
 /**
  * Character identity registry (background side).
@@ -450,6 +452,69 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       });
       await saveState(state);
       return { ok: true };
+    }
+
+    if (type === "CAPTURE_SCREENSHOT") {
+      const rect = message.rect;
+      const dpr = message.devicePixelRatio || 1;
+      if (!rect || rect.w < 4 || rect.h < 4) {
+        return { ok: false, error: "selection_too_small" };
+      }
+
+      const dataUrl = await browser.tabs.captureVisibleTab(null, {
+        format: "png"
+      });
+
+      const resp = await fetch(dataUrl);
+      const blob = await resp.blob();
+      const fullBmp = await createImageBitmap(blob);
+
+      const sx = Math.round(rect.x * dpr);
+      const sy = Math.round(rect.y * dpr);
+      const sw = Math.round(rect.w * dpr);
+      const sh = Math.round(rect.h * dpr);
+
+      const cropCanvas = new OffscreenCanvas(sw, sh);
+      const cctx = cropCanvas.getContext("2d");
+      cctx.drawImage(fullBmp, sx, sy, sw, sh, 0, 0, sw, sh);
+      fullBmp.close();
+
+      const cropBlob = await cropCanvas.convertToBlob({ type: "image/png" });
+      const croppedDataUrl = await new Promise((resolve) => {
+        const fr = new FileReader();
+        fr.onloadend = () => resolve(fr.result);
+        fr.readAsDataURL(cropBlob);
+      });
+
+      const stored = await browser.storage.local.get(SCREENSHOTS_KEY);
+      const screenshots = Array.isArray(stored[SCREENSHOTS_KEY])
+        ? stored[SCREENSHOTS_KEY]
+        : [];
+
+      const appState = await loadState();
+      const entry = {
+        id: `ss-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        characterId: appState.activeCharacterId,
+        domain: message.domain || "",
+        pageUrl: message.pageUrl || "",
+        rect,
+        takenAtMs: Date.now(),
+        dataUrl: croppedDataUrl
+      };
+      screenshots.push(entry);
+      while (screenshots.length > MAX_SCREENSHOTS) {
+        screenshots.shift();
+      }
+      await browser.storage.local.set({ [SCREENSHOTS_KEY]: screenshots });
+      return { ok: true, screenshotId: entry.id };
+    }
+
+    if (type === "GET_SCREENSHOTS") {
+      const stored = await browser.storage.local.get(SCREENSHOTS_KEY);
+      const screenshots = Array.isArray(stored[SCREENSHOTS_KEY])
+        ? stored[SCREENSHOTS_KEY]
+        : [];
+      return { ok: true, screenshots: screenshots.reverse() };
     }
 
     if (type === "GET_ACTIVE_CHARACTER_EVENTS") {

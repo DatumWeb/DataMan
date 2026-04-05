@@ -53,6 +53,9 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawPlatforms();
     drawPlayer(tSec);
+    if (DM.screenshot?.drawSelection) {
+      DM.screenshot.drawSelection();
+    }
     drawHud();
 
     runtime.rafId = requestAnimationFrame(gameLoop);

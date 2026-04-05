@@ -43,6 +43,7 @@
         "src/content/passiveLog.js",
         "src/content/physics.js",
         "src/content/activeExtract.js",
+        "src/content/screenshot.js",
         "src/content/input.js",
         "src/content/overlay.js",
         "src/content/skins/index.js",

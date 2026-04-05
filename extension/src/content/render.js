@@ -64,6 +64,9 @@
     if (DM.screenshot?.drawSelection) {
       DM.screenshot.drawSelection();
     }
+    if (DM.screenshot?.drawExplosion) {
+      DM.screenshot.drawExplosion();
+    }
     drawHud();
 
     runtime.rafId = requestAnimationFrame(gameLoop);

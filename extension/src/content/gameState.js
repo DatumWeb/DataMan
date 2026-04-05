@@ -39,7 +39,8 @@
     screenshot: {
       selecting: false,
       startX: 0,
-      startY: 0
+      startY: 0,
+      explosion: null
     },
     snake: {
       segments: [],

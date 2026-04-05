@@ -16,7 +16,9 @@
       currentPlatform: null,
       /** Instant speed in px/s (space mode). */
       spaceSpeedPxPerSec: 0,
-      _lastReportedMaxVel: 0
+      _maxVelLocal: 0,
+      _lastFlushedMaxVel: 0,
+      _lastMaxVelFlushMs: 0
     },
     physics: {
       gravity: 0,

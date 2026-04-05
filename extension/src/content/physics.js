@@ -204,13 +204,22 @@
       player.y += player.vy;
 
       const perFrame = Math.hypot(player.vx, player.vy);
-      const instantPxPerSec = perFrame * 60;
+      const instantPxPerSec = Math.round(perFrame * 60);
       const smooth = 0.15;
       const prev = player.spaceSpeedPxPerSec || 0;
       player.spaceSpeedPxPerSec = prev + smooth * (instantPxPerSec - prev);
-      if (instantPxPerSec > (player._lastReportedMaxVel || 0)) {
-        player._lastReportedMaxVel = instantPxPerSec;
-        DM.bridge.reportMaxVelocityPxPerSec(instantPxPerSec);
+      if (instantPxPerSec > (player._maxVelLocal || 0)) {
+        player._maxVelLocal = instantPxPerSec;
+      }
+      const now = performance.now();
+      const MAX_VEL_FLUSH_INTERVAL = 5000;
+      if (
+        player._maxVelLocal > (player._lastFlushedMaxVel || 0) &&
+        now - (player._lastMaxVelFlushMs || 0) > MAX_VEL_FLUSH_INTERVAL
+      ) {
+        player._lastFlushedMaxVel = player._maxVelLocal;
+        player._lastMaxVelFlushMs = now;
+        DM.bridge.reportMaxVelocityPxPerSec(player._maxVelLocal);
       }
 
       DM.passiveLog.recordTravel(player.x - prevX);

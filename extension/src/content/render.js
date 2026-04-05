@@ -37,7 +37,11 @@
 
   function gameLoop(now) {
     const { canvas, ctx } = runtime;
-    if (!state.running || !ctx || !canvas) return;
+    if (!state.running) return;
+    if (!ctx || !canvas) {
+      runtime.rafId = requestAnimationFrame(gameLoop);
+      return;
+    }
 
     const t = now ?? performance.now();
     const tSec = t / 1000;

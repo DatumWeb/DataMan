@@ -9,7 +9,9 @@
 
   DM.overlay = {
     install() {
-      if (document.getElementById(config.OVERLAY_ID)) return;
+      const existing = document.getElementById(config.OVERLAY_ID);
+      if (existing && runtime.ctx) return;
+      if (existing) existing.remove();
 
       const root = document.createElement("div");
       root.id = config.OVERLAY_ID;

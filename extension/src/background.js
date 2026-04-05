@@ -26,6 +26,11 @@ const CHARACTER_PROFILES = {
     displayName: "StickMan",
     skin: "stickman",
     colorHex: "#60a5fa"
+  }),
+  "char-astroman": profile({
+    displayName: "AstroMan",
+    skin: "astroman",
+    colorHex: "#a78bfa"
   })
 };
 

@@ -12,6 +12,9 @@
     if (DM.skins.stickman?.preload) {
       void DM.skins.stickman.preload();
     }
+    if (DM.skins.astroman?.preload) {
+      void DM.skins.astroman.preload();
+    }
 
     await DM.bridge.syncCharacterFromBackground();
     DM.render.startLoop();

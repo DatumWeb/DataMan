@@ -9,9 +9,14 @@
     gravity: 0.2,
     jumpStrength: 9.5,
     moveSpeed: 2,
+    physicsMode: "platformer",
     skin: "square",
     color: "#4ade80",
-    displayName: "Character"
+    displayName: "Character",
+    // Space-mode fields (ignored by platformer characters)
+    thrustPower: 0,
+    rotateSpeed: 0,
+    brakeRate: 0
   });
 
   function defineCharacter(overrides) {
@@ -31,6 +36,18 @@
       gravity: 0.1,
       jumpStrength: 7,
       moveSpeed: 2
+    }),
+    "char-astroman": defineCharacter({
+      displayName: "AstroMan",
+      skin: "astroman",
+      color: "#a78bfa",
+      physicsMode: "space",
+      gravity: 0,
+      jumpStrength: 0,
+      moveSpeed: 0,
+      thrustPower: 0.28,
+      rotateSpeed: 0.05,
+      brakeRate: 0.04
     })
   };
 
@@ -53,9 +70,14 @@
     applyToState(id) {
       const def = DM.characters.get(id);
       const { state } = DM;
+      state.activeCharacterId = id;
       state.physics.gravity = def.gravity;
       state.physics.jumpStrength = def.jumpStrength;
       state.physics.moveSpeed = def.moveSpeed;
+      state.physics.physicsMode = def.physicsMode;
+      state.physics.thrustPower = def.thrustPower;
+      state.physics.rotateSpeed = def.rotateSpeed;
+      state.physics.brakeRate = def.brakeRate;
       state.visuals.skin = def.skin;
       state.visuals.color = def.color;
     }

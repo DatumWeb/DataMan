@@ -1,8 +1,7 @@
 const CHARACTER_TILES = [
   { characterId: "char-default", name: "Runner" },
   { characterId: "char-stickman", name: "StickMan" },
-  // Placeholders (same runner for now)
-  { characterId: "char-default", name: "Runner 2" },
+  { characterId: "char-astroman", name: "AstroMan" },
   { characterId: "char-default", name: "Runner 3" }
 ];
 

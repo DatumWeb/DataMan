@@ -61,12 +61,53 @@
     return null;
   }
 
-  function processInput() {
+  function processInputPlatformer() {
     const { player, physics, keys } = state;
     let targetVx = 0;
     if (keys.has("ArrowLeft") || keys.has("KeyA")) targetVx -= physics.moveSpeed;
     if (keys.has("ArrowRight") || keys.has("KeyD")) targetVx += physics.moveSpeed;
     player.vx = targetVx;
+  }
+
+  function processInputSpace() {
+    const { player, physics, keys } = state;
+    const left = keys.has("ArrowLeft") || keys.has("KeyA");
+    const right = keys.has("ArrowRight") || keys.has("KeyD");
+    const thrust = keys.has("ArrowUp") || keys.has("KeyW");
+    const brake = keys.has("ArrowDown") || keys.has("KeyS");
+
+    if (left) player.angle -= physics.rotateSpeed;
+    if (right) player.angle += physics.rotateSpeed;
+
+    if (thrust) {
+      player.vx += Math.cos(player.angle) * physics.thrustPower;
+      player.vy += Math.sin(player.angle) * physics.thrustPower;
+      if (!player.thrusting) {
+        player.thrusting = true;
+        player.thrustStartT = performance.now();
+      }
+    } else {
+      player.thrusting = false;
+    }
+
+    if (brake) {
+      const speed = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
+      if (speed > 0.05) {
+        const factor = Math.max(0, 1 - physics.brakeRate);
+        player.vx *= factor;
+        player.vy *= factor;
+      } else {
+        player.vx = 0;
+        player.vy = 0;
+      }
+    }
+
+    const maxV = 8;
+    const spd = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
+    if (spd > maxV) {
+      player.vx = (player.vx / spd) * maxV;
+      player.vy = (player.vy / spd) * maxV;
+    }
   }
 
   DM.physics = {
@@ -81,11 +122,14 @@
       player.y = 48;
       player.vx = 0;
       player.vy = 0;
+      player.angle = -Math.PI / 2;
+      player.thrusting = false;
       player.onGround = false;
       player.currentPlatform = null;
     },
 
     triggerDropThrough() {
+      if (state.physics.physicsMode === "space") return;
       const { player } = state;
       if (!player.onGround) return;
       const stoodOn = player.currentPlatform;
@@ -109,6 +153,7 @@
     },
 
     tryJump() {
+      if (state.physics.physicsMode === "space") return;
       const { player, physics } = state;
       if (!player.onGround) return;
       const jumpingFrom = player.currentPlatform;
@@ -120,12 +165,12 @@
       }
     },
 
-    update() {
+    updatePlatformer() {
       const { player, physics } = state;
       const prevY = player.y;
       const prevX = player.x;
 
-      processInput();
+      processInputPlatformer();
       player.vy += physics.gravity;
       player.x += player.vx;
       player.y += player.vy;
@@ -147,6 +192,32 @@
       const vh = window.innerHeight;
       if (player.y > vh + 200) {
         DM.physics.spawnPlayerTopCenter();
+      }
+    },
+
+    updateSpace() {
+      const { player } = state;
+      const prevX = player.x;
+
+      processInputSpace();
+      player.x += player.vx;
+      player.y += player.vy;
+
+      DM.passiveLog.recordTravel(player.x - prevX);
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (player.x < -player.w) player.x = vw;
+      if (player.x > vw) player.x = -player.w;
+      if (player.y < -player.h) player.y = vh;
+      if (player.y > vh) player.y = -player.h;
+    },
+
+    update() {
+      if (state.physics.physicsMode === "space") {
+        DM.physics.updateSpace();
+      } else {
+        DM.physics.updatePlatformer();
       }
     }
   };

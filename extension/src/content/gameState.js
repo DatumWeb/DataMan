@@ -9,13 +9,20 @@
       h: 28,
       vx: 0,
       vy: 0,
+      angle: -Math.PI / 2,
+      thrusting: false,
+      thrustStartT: 0,
       onGround: false,
       currentPlatform: null
     },
     physics: {
       gravity: 0,
       jumpStrength: 0,
-      moveSpeed: 0
+      moveSpeed: 0,
+      physicsMode: "platformer",
+      thrustPower: 0,
+      rotateSpeed: 0,
+      brakeRate: 0
     },
     visuals: {
       skin: "square",

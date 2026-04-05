@@ -8,8 +8,8 @@
 | 3/30/2026 | Added a basic extraction feature, ui for popup | 2.5 |
 | 3/31/2026 |  |  |
 | 4/1/2026 | Fix drop bug | 2 |
-| 4/2/2026 |  |  |
-| 4/3/2026 |  |  |
+| 4/2/2026 | Refactor code for physics and movement | 3 |
+| 4/3/2026 | Add AstroMan character | 3 |
 | 4/4/2026 |  |  |
 | 4/5/2026 |  |  |
 | Total |  |  |

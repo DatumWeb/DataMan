@@ -2,7 +2,11 @@
   DM.skins = DM.skins || {};
 
   DM.skins.draw = function draw(skin, tSec) {
-    // Default fallback: basic geometric avatar.
+    if (skin === "astroman" && DM.skins.astroman?.draw) {
+      DM.skins.astroman.draw(tSec);
+      return;
+    }
+
     if (skin === "stickman" && DM.skins.stickman?.draw) {
       DM.skins.stickman.draw(tSec);
       return;

@@ -36,14 +36,15 @@
 
           state.keys.add(event.code);
 
-          if (event.code === "Space") {
+          const isSpace = state.physics.physicsMode === "space";
+
+          if (!isSpace && event.code === "Space") {
             DM.physics.tryJump();
           }
-          if (event.code === "ArrowDown" || event.code === "KeyS") {
+          if (!isSpace && (event.code === "ArrowDown" || event.code === "KeyS")) {
             DM.physics.triggerDropThrough();
           }
-
-          if (event.code === "ArrowUp" || event.code === "KeyW") {
+          if (!isSpace && (event.code === "ArrowUp" || event.code === "KeyW")) {
             DM.activeExtract.tryExtract(event.code);
           }
         },

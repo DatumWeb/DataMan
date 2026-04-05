@@ -24,7 +24,8 @@
         "assets/StickmanPack/Run/thickRunSheet.png",
         "assets/StickmanPack/Run/thinRunSheet.png",
         "assets/StickmanPack/Punch/thickPunchSheet.png",
-        "assets/StickmanPack/Punch/thinPunchSheet.png"
+        "assets/StickmanPack/Punch/thinPunchSheet.png",
+        "assets/AstroMan/ezgif.com-gif-to-sprite-converter.png"
       ],
       "matches": ["<all_urls>"]
     }
@@ -47,6 +48,7 @@
         "src/content/skins/index.js",
         "src/content/skins/basic.js",
         "src/content/skins/stickman.js",
+        "src/content/skins/astroman.js",
         "src/content/render.js",
         "src/content/bootstrap.js"
       ],

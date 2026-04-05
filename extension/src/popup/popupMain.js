@@ -57,8 +57,28 @@ function renderQuickStats(readable) {
   const charId = activeCharacterId();
 
   if (charId === "char-snake") {
-    container.className = "quick-stats quick-stats-single";
-    container.appendChild(statBox("Letters eaten", String(readable?.lettersEaten ?? 0)));
+    container.className = "quick-stats quick-stats-3";
+    container.appendChild(statBox("Total eaten", String(readable?.lettersEaten ?? 0)));
+    const bankBox = statBox("Word bank", "…");
+    container.appendChild(bankBox);
+    const wordsBox = statBox("Words created", "…");
+    container.appendChild(wordsBox);
+    browser.runtime
+      .sendMessage({ type: "GET_EATEN_LETTERS" })
+      .then((res) => {
+        if (res?.ok) {
+          bankBox.querySelector(".value").textContent = String(res.wordBank.length);
+        }
+      })
+      .catch(() => {});
+    browser.runtime
+      .sendMessage({ type: "GET_SPIT_WORDS" })
+      .then((res) => {
+        if (res?.ok) {
+          wordsBox.querySelector(".value").textContent = String(res.wordsCreated);
+        }
+      })
+      .catch(() => {});
   } else if (charId === "char-astroman") {
     container.className = "quick-stats quick-stats-single";
     container.appendChild(statBox("Screenshots", "…"));
@@ -87,12 +107,24 @@ function renderActionButtons() {
   const charId = activeCharacterId();
 
   if (charId === "char-snake") {
-    container.className = "actions";
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.textContent = "View eaten letters";
-    btn.addEventListener("click", onViewEatenLetters);
-    container.appendChild(btn);
+    container.className = "actions actions-3";
+    const btnLetters = document.createElement("button");
+    btnLetters.type = "button";
+    btnLetters.textContent = "All eaten";
+    btnLetters.addEventListener("click", onViewEatenLetters);
+    container.appendChild(btnLetters);
+
+    const btnBank = document.createElement("button");
+    btnBank.type = "button";
+    btnBank.textContent = "Word bank";
+    btnBank.addEventListener("click", onViewWordBank);
+    container.appendChild(btnBank);
+
+    const btnWords = document.createElement("button");
+    btnWords.type = "button";
+    btnWords.textContent = "Words created";
+    btnWords.addEventListener("click", onViewSpitWords);
+    container.appendChild(btnWords);
   } else if (charId === "char-astroman") {
     container.className = "actions";
     const btn = document.createElement("button");
@@ -211,6 +243,76 @@ async function onViewEatenLetters() {
     view.appendChild(card);
   } catch (error) {
     renderEmpty("Could not load eaten letters.");
+    setStatus(error?.message || String(error));
+  }
+}
+
+async function onViewWordBank() {
+  setStatus("Loading word bank…");
+  try {
+    const res = await browser.runtime.sendMessage({ type: "GET_EATEN_LETTERS" });
+    if (!res?.ok) {
+      throw new Error(res?.error || "Could not load word bank.");
+    }
+    const view = el("data-view");
+    view.textContent = "";
+
+    const bank = Array.isArray(res.wordBank) ? res.wordBank : [];
+    if (!bank.length) {
+      renderEmpty("Word bank is empty. Eat more text to refill!");
+      setStatus("0 letters in word bank.");
+      return;
+    }
+
+    setStatus(`${bank.length} letter(s) available in word bank.`);
+
+    const card = document.createElement("div");
+    card.className = "letters-eaten-card";
+    card.innerHTML = `<div class="letters-eaten-header">${bank.length} letters available</div>`;
+
+    const body = document.createElement("div");
+    body.className = "letters-eaten-body";
+    body.textContent = bank.join("");
+    card.appendChild(body);
+    view.appendChild(card);
+  } catch (error) {
+    renderEmpty("Could not load word bank.");
+    setStatus(error?.message || String(error));
+  }
+}
+
+async function onViewSpitWords() {
+  setStatus("Loading words…");
+  try {
+    const res = await browser.runtime.sendMessage({ type: "GET_SPIT_WORDS" });
+    if (!res?.ok) {
+      throw new Error(res?.error || "Could not load words.");
+    }
+    const view = el("data-view");
+    view.textContent = "";
+
+    const words = Array.isArray(res.words) ? res.words : [];
+    if (!words.length) {
+      renderEmpty("No words created yet. Eat some text and press Space to spit!");
+      setStatus("0 words created.");
+      return;
+    }
+
+    setStatus(`${words.length} word(s) created by ${res.displayName}.`);
+    for (const entry of [...words].reverse()) {
+      const card = document.createElement("article");
+      card.className = "event-card";
+      const when = entry.atMs ? new Date(entry.atMs).toLocaleString() : "—";
+      card.innerHTML = `
+        <div class="event-head">
+          <span class="spit-word">${entry.word}</span>
+          <span>${when}</span>
+        </div>
+      `;
+      view.appendChild(card);
+    }
+  } catch (error) {
+    renderEmpty("Could not load words.");
     setStatus(error?.message || String(error));
   }
 }

@@ -282,6 +282,7 @@
 
       if (eatResult) {
         sn.lettersEaten++;
+        sn.eatenBank.push(eatResult.char);
 
         DM.bridge.logPassiveEvent({
           eventType: "letter_eaten",

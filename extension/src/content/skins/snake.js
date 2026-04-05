@@ -55,13 +55,38 @@
       }
     }
 
+    const bankSize = Array.isArray(sn.eatenBank) ? sn.eatenBank.length : 0;
     ctx.fillStyle = "rgba(15, 23, 42, 0.72)";
-    ctx.fillRect(8, 40, 170, 22);
+    ctx.fillRect(8, 40, 280, 22);
     ctx.fillStyle = "#e2e8f0";
     ctx.font = "11px monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.fillText(`Letters eaten: ${sn.lettersEaten}  Length: ${sn.segments.length}`, 14, 51);
+    ctx.fillText(
+      `Eaten: ${sn.lettersEaten}  Bank: ${bankSize}  Words: ${sn.wordsCreated}`,
+      14, 51
+    );
+
+    const spitMsg = DM.snakeSpit?.currentMessage();
+    if (spitMsg && sn.segments.length > 0) {
+      const head = sn.segments[0];
+      const progress = DM.snakeSpit.displayProgress();
+      const alpha = Math.max(0, 1 - progress * 1.2);
+      const rise = progress * 30;
+
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.font = "bold 35px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+
+      const textY = head.y - 8 - rise;
+      ctx.fillStyle = "#0f172a";
+      ctx.fillText(spitMsg, head.x + cellSize / 2 + 1, textY + 1);
+      ctx.fillStyle = "#bbf7d0";
+      ctx.fillText(spitMsg, head.x + cellSize / 2, textY);
+      ctx.restore();
+    }
 
     if (!sn.alive) {
       ctx.fillStyle = "rgba(15, 23, 42, 0.7)";

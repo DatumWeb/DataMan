@@ -54,6 +54,16 @@
           ...payload
         })
         .catch(() => {});
+    },
+
+    logSpitWord(word, consumedLetters) {
+      browser.runtime
+        .sendMessage({
+          type: "LOG_SPIT_WORD",
+          word,
+          consumedLetters
+        })
+        .catch(() => {});
     }
   };
 })(globalThis.DataMan);

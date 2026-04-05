@@ -42,7 +42,12 @@
       nextDirection: "right",
       lastTickMs: 0,
       alive: true,
-      lettersEaten: 0
+      lettersEaten: 0,
+      eatenBank: [],
+      spitMessage: null,
+      spitAtMs: 0,
+      wordsCreated: 0,
+      wordsList: []
     },
     /** `Element` for the DOM platform being passed through, or `'VIEWPORT_FLOOR'`, or `null`. */
     dropThroughIgnoreKey: null,

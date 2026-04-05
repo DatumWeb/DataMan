@@ -44,6 +44,7 @@
         "src/content/physics.js",
         "src/content/activeExtract.js",
         "src/content/snakeFood.js",
+        "src/content/snakeSpit.js",
         "src/content/screenshot.js",
         "src/content/input.js",
         "src/content/overlay.js",

@@ -50,6 +50,13 @@
           }
 
           if (mode === "snake") {
+            if (event.code === "Space") {
+              if (!state.snake.alive && DM.physics?.initSnake) {
+                DM.physics.initSnake();
+              } else if (DM.snakeSpit?.canSpit()) {
+                DM.snakeSpit.spit();
+              }
+            }
             const OPPOSITES = { up: "down", down: "up", left: "right", right: "left" };
             const sn = state.snake;
             let dir = null;

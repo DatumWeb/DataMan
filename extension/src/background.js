@@ -51,10 +51,13 @@ function freshStats() {
     totalJumps: 0,
     totalExtractions: 0,
     lettersEaten: 0,
+    wordsCreated: 0,
     domainsVisitedCount: 0,
     jumpsFromTag: {},
     extractionByTag: {},
     lettersEatenList: [],
+    wordBank: [],
+    wordsList: [],
     visitedDomains: [],
     updatedAtMs: Date.now()
   };
@@ -101,6 +104,12 @@ function ensureCharacterShape(c) {
   mergedStats.visitedDomains = Array.isArray(c?.stats?.visitedDomains)
     ? c.stats.visitedDomains
     : base.stats.visitedDomains || [];
+  mergedStats.wordBank = Array.isArray(c?.stats?.wordBank)
+    ? c.stats.wordBank
+    : base.stats.wordBank || [];
+  mergedStats.wordsList = Array.isArray(c?.stats?.wordsList)
+    ? c.stats.wordsList
+    : base.stats.wordsList || [];
 
   const p = profileFor(c?.id);
   return {
@@ -214,6 +223,8 @@ function applyPassiveEventEffects(ch, row) {
     if (ch.stats.lettersEatenList.length > 1000) {
       ch.stats.lettersEatenList = ch.stats.lettersEatenList.slice(-1000);
     }
+    ch.stats.wordBank = Array.isArray(ch.stats.wordBank) ? ch.stats.wordBank : [];
+    ch.stats.wordBank.push(letter);
   }
 }
 
@@ -355,6 +366,8 @@ function buildReadableSummary(state) {
     distancePx: stats.distancePx ?? 0,
     totalExtractions: stats.totalExtractions ?? 0,
     lettersEaten: stats.lettersEaten ?? 0,
+    wordBankSize: Array.isArray(stats.wordBank) ? stats.wordBank.length : 0,
+    wordsCreated: stats.wordsCreated ?? 0,
     lettersPreview: Array.isArray(stats.lettersEatenList)
       ? stats.lettersEatenList.slice(-30).join("")
       : "",
@@ -550,6 +563,9 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         lettersEaten: ch.stats.lettersEaten || 0,
         letters: Array.isArray(ch.stats.lettersEatenList)
           ? ch.stats.lettersEatenList
+          : [],
+        wordBank: Array.isArray(ch.stats.wordBank)
+          ? ch.stats.wordBank
           : []
       };
     }
@@ -564,6 +580,46 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         (s) => s.characterId === state.activeCharacterId
       );
       return { ok: true, count: myShots.length, totalCount: screenshots.length };
+    }
+
+    if (type === "LOG_SPIT_WORD") {
+      const word = String(message.word || "");
+      if (!word) return { ok: false, error: "empty_word" };
+      let state = await loadState();
+      const cid = state.activeCharacterId;
+      const ch = state.characters[cid];
+      if (!ch) return { ok: false, error: "no_active_character" };
+      ch.stats.wordsCreated = (ch.stats.wordsCreated || 0) + 1;
+      ch.stats.wordsList = Array.isArray(ch.stats.wordsList) ? ch.stats.wordsList : [];
+      ch.stats.wordsList.push({ word, atMs: Date.now() });
+      if (ch.stats.wordsList.length > 500) {
+        ch.stats.wordsList = ch.stats.wordsList.slice(-500);
+      }
+      const consumed = Array.isArray(message.consumedLetters) ? message.consumedLetters : word.split("");
+      ch.stats.wordBank = Array.isArray(ch.stats.wordBank) ? ch.stats.wordBank : [];
+      for (const letter of consumed) {
+        const idx = ch.stats.wordBank.findIndex(
+          (b) => b.toLowerCase() === letter.toLowerCase()
+        );
+        if (idx !== -1) ch.stats.wordBank.splice(idx, 1);
+      }
+      ch.stats.updatedAtMs = Date.now();
+      await saveState(state);
+      return { ok: true };
+    }
+
+    if (type === "GET_SPIT_WORDS") {
+      const state = await loadState();
+      const id = state.activeCharacterId;
+      const ch = state.characters[id];
+      if (!ch) return { ok: false, error: "no_active_character" };
+      return {
+        ok: true,
+        characterId: id,
+        displayName: ch.displayName || id,
+        wordsCreated: ch.stats.wordsCreated || 0,
+        words: Array.isArray(ch.stats.wordsList) ? ch.stats.wordsList : []
+      };
     }
 
     if (type === "GET_ACTIVE_CHARACTER_EVENTS") {

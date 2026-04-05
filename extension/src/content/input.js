@@ -15,7 +15,6 @@
         "keydown",
         (event) => {
           if (inputTargetIsEditable(event.target)) return;
-          if (event.repeat) return;
           const codes = [
             "ArrowLeft",
             "ArrowRight",
@@ -31,8 +30,8 @@
           ];
           if (!codes.includes(event.code)) return;
 
-          if (event.code === "Space") event.preventDefault();
-          if (event.code === "ArrowUp") event.preventDefault();
+          event.preventDefault();
+          if (event.repeat) return;
 
           state.keys.add(event.code);
 

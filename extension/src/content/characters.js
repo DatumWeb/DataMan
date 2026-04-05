@@ -45,9 +45,9 @@
       gravity: 0,
       jumpStrength: 0,
       moveSpeed: 0,
-      thrustPower: 0.28,
+      thrustPower: 0.009,
       rotateSpeed: 0.05,
-      brakeRate: 0.04
+      brakeRate: 0.02
     })
   };
 

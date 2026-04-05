@@ -405,6 +405,28 @@ async function onViewExtracted() {
   }
 }
 
+function groupScreenshots(shots) {
+  const groups = {};
+  for (const ss of shots) {
+    const d = ss.takenAtMs ? new Date(ss.takenAtMs) : new Date();
+    const dateKey = d.toLocaleDateString();
+    const site = ss.domain || "unknown";
+    const key = `${dateKey}|||${site}`;
+    if (!groups[key]) groups[key] = { dateKey, site, items: [] };
+    groups[key].items.push(ss);
+  }
+  return Object.values(groups);
+}
+
+function downloadDataUrl(dataUrl, filename) {
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
 async function onViewScreenshots() {
   setStatus("Loading screenshots…");
   try {
@@ -423,20 +445,47 @@ async function onViewScreenshots() {
     }
 
     setStatus(`${shots.length} screenshot(s).`);
-    for (const ss of shots) {
-      const card = document.createElement("div");
-      card.className = "screenshot-card";
-      const when = ss.takenAtMs ? new Date(ss.takenAtMs).toLocaleString() : "—";
-      card.innerHTML = `
-        <div class="screenshot-meta">${when} · ${ss.domain || "—"} · ${ss.rect?.w ?? "?"}×${ss.rect?.h ?? "?"}</div>
-      `;
-      if (ss.dataUrl) {
-        const img = document.createElement("img");
-        img.src = ss.dataUrl;
-        img.alt = `Screenshot from ${ss.domain || "unknown"}`;
-        card.appendChild(img);
+    const groups = groupScreenshots(shots);
+
+    for (const group of groups) {
+      const header = document.createElement("div");
+      header.className = "screenshot-group-header";
+      header.textContent = `${group.dateKey} · ${group.site}`;
+      view.appendChild(header);
+
+      for (const ss of group.items) {
+        const card = document.createElement("div");
+        card.className = "screenshot-card";
+        const time = ss.takenAtMs
+          ? new Date(ss.takenAtMs).toLocaleTimeString()
+          : "—";
+        card.innerHTML = `
+          <div class="screenshot-meta">${time} · ${ss.rect?.w ?? "?"}×${ss.rect?.h ?? "?"}</div>
+        `;
+        if (ss.dataUrl) {
+          const wrap = document.createElement("div");
+          wrap.className = "screenshot-img-wrap";
+
+          const img = document.createElement("img");
+          img.src = ss.dataUrl;
+          img.alt = `Screenshot from ${ss.domain || "unknown"}`;
+
+          const dlBtn = document.createElement("button");
+          dlBtn.className = "screenshot-dl-btn";
+          dlBtn.title = "Download";
+          dlBtn.textContent = "⬇";
+          const filename = `dataman-${ss.domain || "screenshot"}-${ss.id || Date.now()}.png`;
+          dlBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            downloadDataUrl(ss.dataUrl, filename);
+          });
+
+          wrap.appendChild(img);
+          wrap.appendChild(dlBtn);
+          card.appendChild(wrap);
+        }
+        view.appendChild(card);
       }
-      view.appendChild(card);
     }
   } catch (error) {
     renderEmpty("Could not load screenshots.");

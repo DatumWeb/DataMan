@@ -7,10 +7,13 @@ const CHARACTER_TILES = [
 
 let selectedCharacterIdx = 0;
 let latestSummaryReadable = null;
-let cachedEvents = [];
 
 function el(id) {
   return document.getElementById(id);
+}
+
+function activeCharacterId() {
+  return CHARACTER_TILES[selectedCharacterIdx].characterId;
 }
 
 function setStatus(text) {
@@ -40,11 +43,78 @@ function renderCharacterGrid() {
   });
 }
 
-function setQuickStats(readable) {
-  el("stat-jumps").textContent = String(readable?.totalJumps ?? 0);
-  el("stat-pixels").textContent = String(readable?.distancePx ?? 0);
-  el("stat-domains").textContent = String(readable?.domainsVisitedCount ?? 0);
-  el("stat-extractions").textContent = String(readable?.totalExtractions ?? 0);
+function statBox(label, value) {
+  const div = document.createElement("div");
+  div.className = "stat-box";
+  div.innerHTML = `<span class="label">${label}</span><span class="value">${value}</span>`;
+  return div;
+}
+
+function renderQuickStats(readable) {
+  const container = el("stats-quick");
+  container.textContent = "";
+
+  const charId = activeCharacterId();
+
+  if (charId === "char-snake") {
+    container.className = "quick-stats quick-stats-single";
+    container.appendChild(statBox("Letters eaten", String(readable?.lettersEaten ?? 0)));
+  } else if (charId === "char-astroman") {
+    container.className = "quick-stats quick-stats-single";
+    container.appendChild(statBox("Screenshots", "…"));
+    browser.runtime
+      .sendMessage({ type: "GET_SCREENSHOT_COUNT" })
+      .then((res) => {
+        if (res?.ok) {
+          container.textContent = "";
+          container.appendChild(statBox("Screenshots taken", String(res.count)));
+        }
+      })
+      .catch(() => {});
+  } else {
+    container.className = "quick-stats";
+    container.appendChild(statBox("Total jumps", String(readable?.totalJumps ?? 0)));
+    container.appendChild(statBox("Pixels", String(readable?.distancePx ?? 0)));
+    container.appendChild(statBox("Domains visited", String(readable?.domainsVisitedCount ?? 0)));
+    container.appendChild(statBox("Total extractions", String(readable?.totalExtractions ?? 0)));
+  }
+}
+
+function renderActionButtons() {
+  const container = el("action-buttons");
+  container.textContent = "";
+
+  const charId = activeCharacterId();
+
+  if (charId === "char-snake") {
+    container.className = "actions";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "View eaten letters";
+    btn.addEventListener("click", onViewEatenLetters);
+    container.appendChild(btn);
+  } else if (charId === "char-astroman") {
+    container.className = "actions";
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = "View screenshots";
+    btn.addEventListener("click", onViewScreenshots);
+    container.appendChild(btn);
+  } else {
+    container.className = "actions";
+    const btnAll = document.createElement("button");
+    btnAll.type = "button";
+    btnAll.textContent = "All events";
+    btnAll.addEventListener("click", onViewAllEvents);
+
+    const btnExtracted = document.createElement("button");
+    btnExtracted.type = "button";
+    btnExtracted.textContent = "Extracted data";
+    btnExtracted.addEventListener("click", onViewExtracted);
+
+    container.appendChild(btnAll);
+    container.appendChild(btnExtracted);
+  }
 }
 
 async function refreshSummary() {
@@ -52,7 +122,7 @@ async function refreshSummary() {
     const res = await browser.runtime.sendMessage({ type: "GET_STATE_SUMMARY" });
     if (!res?.ok || !res.summary?.readable) {
       latestSummaryReadable = null;
-      setQuickStats(null);
+      renderQuickStats(null);
       setStatus("Could not load summary.");
       updateStatsTitle();
       return;
@@ -62,11 +132,12 @@ async function refreshSummary() {
     const idx = CHARACTER_TILES.findIndex((t) => t.characterId === activeId);
     if (idx >= 0) selectedCharacterIdx = idx;
     renderCharacterGrid();
-    setQuickStats(latestSummaryReadable);
+    renderQuickStats(latestSummaryReadable);
+    renderActionButtons();
     updateStatsTitle();
   } catch (error) {
     latestSummaryReadable = null;
-    setQuickStats(null);
+    renderQuickStats(null);
     setStatus(error?.message || String(error));
     updateStatsTitle();
   }
@@ -78,6 +149,7 @@ async function setActiveCharacter(characterId, idxToSelect) {
       idxToSelect ?? CHARACTER_TILES.findIndex((t) => t.characterId === characterId);
     if (charIdx >= 0) selectedCharacterIdx = charIdx;
     renderCharacterGrid();
+    renderActionButtons();
 
     await browser.runtime.sendMessage({
       type: "SET_ACTIVE_CHARACTER",
@@ -85,31 +157,11 @@ async function setActiveCharacter(characterId, idxToSelect) {
     });
 
     setStatus(`Switched to ${CHARACTER_TILES[selectedCharacterIdx].name}.`);
+    el("data-view").textContent = "";
     await refreshSummary();
   } catch (error) {
     setStatus(error?.message || String(error));
   }
-}
-
-async function loadEvents() {
-  const res = await browser.runtime.sendMessage({ type: "GET_ACTIVE_CHARACTER_EVENTS" });
-  if (!res?.ok) {
-    throw new Error(res?.error || "Could not load events.");
-  }
-  cachedEvents = Array.isArray(res.events) ? res.events : [];
-  return {
-    events: cachedEvents,
-    displayName: res.displayName || res.characterId || "Character",
-    characterId: res.characterId || "unknown"
-  };
-}
-
-function eventCardBase(ev) {
-  const when =
-    ev?.occurredAtMs != null ? new Date(ev.occurredAtMs).toLocaleString() : "—";
-  const type = ev?.eventType || "unknown";
-  const mode = ev?.collectionMode || "unknown";
-  return { when, type, mode };
 }
 
 function renderEmpty(message) {
@@ -121,72 +173,84 @@ function renderEmpty(message) {
   view.appendChild(p);
 }
 
-function renderAllEvents(events, meta) {
-  const view = el("data-view");
-  view.textContent = "";
-  if (!events.length) {
-    renderEmpty("No tracked events saved for this character yet.");
-    setStatus(`0 events for ${meta.displayName}.`);
-    return;
-  }
-
-  setStatus(`${events.length} tracked event(s) for ${meta.displayName} (${meta.characterId}).`);
-  for (const ev of events) {
-    const card = document.createElement("article");
-    card.className = "event-card";
-    const head = eventCardBase(ev);
-    card.innerHTML = `
-      <div class="event-head">
-        <span>${head.type}</span>
-        <span>${head.when}</span>
-      </div>
-      <div class="event-line">Mode: ${head.mode}</div>
-      <div class="event-line">Domain: ${ev.domain || "—"}</div>
-      <div class="event-line">Element: ${ev.elementTag || "—"}</div>
-      <div class="event-line">Selector: ${ev.selectorGuess || "—"}</div>
-      <div class="event-line">Text: ${ev.textPreview || "—"}</div>
-    `;
-    view.appendChild(card);
-  }
+function eventCardBase(ev) {
+  const when =
+    ev?.occurredAtMs != null ? new Date(ev.occurredAtMs).toLocaleString() : "—";
+  const type = ev?.eventType || "unknown";
+  const mode = ev?.collectionMode || "unknown";
+  return { when, type, mode };
 }
 
-function renderExtractedEvents(events, meta) {
-  const extracted = events.filter(
-    (ev) => ev?.collectionMode === "active_extract" && ev?.eventType === "extraction"
-  );
-  const view = el("data-view");
-  view.textContent = "";
+async function onViewEatenLetters() {
+  setStatus("Loading eaten letters…");
+  try {
+    const res = await browser.runtime.sendMessage({ type: "GET_EATEN_LETTERS" });
+    if (!res?.ok) {
+      throw new Error(res?.error || "Could not load letters.");
+    }
+    const view = el("data-view");
+    view.textContent = "";
 
-  if (!extracted.length) {
-    renderEmpty("No extracted data yet. Stand on a platform and press Up Arrow or W.");
-    setStatus(`0 extractions for ${meta.displayName}.`);
-    return;
-  }
+    const letters = Array.isArray(res.letters) ? res.letters : [];
+    if (!letters.length) {
+      renderEmpty("No letters eaten yet. Move the snake over page text!");
+      setStatus("0 letters eaten.");
+      return;
+    }
 
-  setStatus(`${extracted.length} extraction(s) for ${meta.displayName} — clearer view.`);
-  for (const ev of extracted) {
-    const card = document.createElement("article");
-    card.className = "event-card";
-    const head = eventCardBase(ev);
-    const preview = ev.textPreview || "(no text found)";
-    card.innerHTML = `
-      <div class="event-head">
-        <span>Extraction</span>
-        <span>${head.when}</span>
-      </div>
-      <div class="event-line"><strong>From:</strong> ${ev.elementTag || "—"} (${ev.selectorGuess || "—"})</div>
-      <div class="event-line"><strong>Domain:</strong> ${ev.domain || "—"}</div>
-      <div class="event-line"><strong>Text preview:</strong> ${preview}</div>
-    `;
+    setStatus(`${letters.length} letter(s) eaten by ${res.displayName}.`);
+
+    const card = document.createElement("div");
+    card.className = "letters-eaten-card";
+    card.innerHTML = `<div class="letters-eaten-header">${letters.length} letters eaten</div>`;
+
+    const body = document.createElement("div");
+    body.className = "letters-eaten-body";
+    body.textContent = letters.join("");
+    card.appendChild(body);
     view.appendChild(card);
+  } catch (error) {
+    renderEmpty("Could not load eaten letters.");
+    setStatus(error?.message || String(error));
   }
 }
 
 async function onViewAllEvents() {
   setStatus("Loading all tracked event data…");
   try {
-    const meta = await loadEvents();
-    renderAllEvents(meta.events, meta);
+    const res = await browser.runtime.sendMessage({ type: "GET_ACTIVE_CHARACTER_EVENTS" });
+    if (!res?.ok) {
+      throw new Error(res?.error || "Could not load events.");
+    }
+    const events = Array.isArray(res.events) ? res.events : [];
+    const meta = { displayName: res.displayName, characterId: res.characterId };
+    const view = el("data-view");
+    view.textContent = "";
+
+    if (!events.length) {
+      renderEmpty("No tracked events saved for this character yet.");
+      setStatus(`0 events for ${meta.displayName}.`);
+      return;
+    }
+
+    setStatus(`${events.length} tracked event(s) for ${meta.displayName} (${meta.characterId}).`);
+    for (const ev of events) {
+      const card = document.createElement("article");
+      card.className = "event-card";
+      const head = eventCardBase(ev);
+      card.innerHTML = `
+        <div class="event-head">
+          <span>${head.type}</span>
+          <span>${head.when}</span>
+        </div>
+        <div class="event-line">Mode: ${head.mode}</div>
+        <div class="event-line">Domain: ${ev.domain || "—"}</div>
+        <div class="event-line">Element: ${ev.elementTag || "—"}</div>
+        <div class="event-line">Selector: ${ev.selectorGuess || "—"}</div>
+        <div class="event-line">Text: ${ev.textPreview || "—"}</div>
+      `;
+      view.appendChild(card);
+    }
   } catch (error) {
     renderEmpty("Could not load events.");
     setStatus(error?.message || String(error));
@@ -196,8 +260,40 @@ async function onViewAllEvents() {
 async function onViewExtracted() {
   setStatus("Loading extracted data…");
   try {
-    const meta = await loadEvents();
-    renderExtractedEvents(meta.events, meta);
+    const res = await browser.runtime.sendMessage({ type: "GET_ACTIVE_CHARACTER_EVENTS" });
+    if (!res?.ok) {
+      throw new Error(res?.error || "Could not load events.");
+    }
+    const events = (Array.isArray(res.events) ? res.events : []).filter(
+      (ev) => ev?.collectionMode === "active_extract" && ev?.eventType === "extraction"
+    );
+    const meta = { displayName: res.displayName, characterId: res.characterId };
+    const view = el("data-view");
+    view.textContent = "";
+
+    if (!events.length) {
+      renderEmpty("No extracted data yet. Stand on a platform and press Up Arrow or W.");
+      setStatus(`0 extractions for ${meta.displayName}.`);
+      return;
+    }
+
+    setStatus(`${events.length} extraction(s) for ${meta.displayName} — clearer view.`);
+    for (const ev of events) {
+      const card = document.createElement("article");
+      card.className = "event-card";
+      const head = eventCardBase(ev);
+      const preview = ev.textPreview || "(no text found)";
+      card.innerHTML = `
+        <div class="event-head">
+          <span>Extraction</span>
+          <span>${head.when}</span>
+        </div>
+        <div class="event-line"><strong>From:</strong> ${ev.elementTag || "—"} (${ev.selectorGuess || "—"})</div>
+        <div class="event-line"><strong>Domain:</strong> ${ev.domain || "—"}</div>
+        <div class="event-line"><strong>Text preview:</strong> ${preview}</div>
+      `;
+      view.appendChild(card);
+    }
   } catch (error) {
     renderEmpty("Could not load extracted data.");
     setStatus(error?.message || String(error));
@@ -246,10 +342,7 @@ async function onViewScreenshots() {
 document.addEventListener("DOMContentLoaded", async () => {
   renderCharacterGrid();
   updateStatsTitle();
+  renderActionButtons();
   await refreshSummary();
   renderEmpty("Pick a view below to inspect data.");
-
-  el("view-all-events").addEventListener("click", onViewAllEvents);
-  el("view-extracted").addEventListener("click", onViewExtracted);
-  el("view-screenshots").addEventListener("click", onViewScreenshots);
 });

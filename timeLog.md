@@ -11,5 +11,5 @@
 | 4/2/2026 | Refactor code for physics and movement | 3 |
 | 4/3/2026 | Add AstroMan character, fix astro rates and naviagtion of page | 4 |
 | 4/4/2026 | Add AstroMan screenshot feature | 2 |
-| 4/5/2026 |  |  |
+| 4/5/2026 | Add snake character, adjust display data | 2 |
 | Total |  |  |

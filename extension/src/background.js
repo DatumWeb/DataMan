@@ -211,8 +211,8 @@ function applyPassiveEventEffects(ch, row) {
       ? ch.stats.lettersEatenList
       : [];
     ch.stats.lettersEatenList.push(letter);
-    if (ch.stats.lettersEatenList.length > 200) {
-      ch.stats.lettersEatenList = ch.stats.lettersEatenList.slice(-200);
+    if (ch.stats.lettersEatenList.length > 1000) {
+      ch.stats.lettersEatenList = ch.stats.lettersEatenList.slice(-1000);
     }
   }
 }
@@ -536,6 +536,34 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         ? stored[SCREENSHOTS_KEY]
         : [];
       return { ok: true, screenshots: screenshots.reverse() };
+    }
+
+    if (type === "GET_EATEN_LETTERS") {
+      const state = await loadState();
+      const id = state.activeCharacterId;
+      const ch = state.characters[id];
+      if (!ch) return { ok: false, error: "no_active_character" };
+      return {
+        ok: true,
+        characterId: id,
+        displayName: ch.displayName || id,
+        lettersEaten: ch.stats.lettersEaten || 0,
+        letters: Array.isArray(ch.stats.lettersEatenList)
+          ? ch.stats.lettersEatenList
+          : []
+      };
+    }
+
+    if (type === "GET_SCREENSHOT_COUNT") {
+      const stored = await browser.storage.local.get(SCREENSHOTS_KEY);
+      const screenshots = Array.isArray(stored[SCREENSHOTS_KEY])
+        ? stored[SCREENSHOTS_KEY]
+        : [];
+      const state = await loadState();
+      const myShots = screenshots.filter(
+        (s) => s.characterId === state.activeCharacterId
+      );
+      return { ok: true, count: myShots.length, totalCount: screenshots.length };
     }
 
     if (type === "GET_ACTIVE_CHARACTER_EVENTS") {

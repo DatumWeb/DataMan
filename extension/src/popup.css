@@ -170,6 +170,32 @@ button:hover {
   word-break: break-word;
 }
 
+.quick-stats-single {
+  grid-template-columns: 1fr;
+}
+
+.letters-eaten-card {
+  padding: 10px;
+}
+
+.letters-eaten-header {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+
+.letters-eaten-body {
+  font-family: "Courier New", monospace;
+  font-size: 0.85rem;
+  color: #334155;
+  word-break: break-all;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  max-height: 260px;
+  overflow-y: auto;
+}
+
 .empty-note {
   color: #64748b;
   font-size: 0.78rem;

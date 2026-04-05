@@ -7,7 +7,8 @@
   const { state } = DM;
 
   const OVERLAY_ID = DM.config?.OVERLAY_ID || "dataman-overlay";
-  const COOLDOWN_MS = 350;
+  /** Min ms between bites while overlapping text (lower = faster munch). */
+  const COOLDOWN_MS = 120;
   const MAX_ELEMENT_AREA = 400 * 400;
   let lastEatMs = 0;
 

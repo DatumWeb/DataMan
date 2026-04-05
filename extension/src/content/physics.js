@@ -5,11 +5,49 @@
     return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   }
 
+  /** Stable handle: DOM node for real elements, or floor marker for the viewport slab. */
+  function platformIgnoreKey(p) {
+    if (!p) return null;
+    if (p.elementTag === "VIEWPORT_FLOOR") return "VIEWPORT_FLOOR";
+    return p.source || null;
+  }
+
+  function platformMatchesIgnoreKey(p, key) {
+    if (key == null || key === undefined) return false;
+    if (key === "VIEWPORT_FLOOR") return p.elementTag === "VIEWPORT_FLOOR";
+    return p.source === key;
+  }
+
   function findGroundCollision(nextPlayer, previousY) {
-    if (Date.now() < state.dropThroughUntil) return null;
     if (nextPlayer.vy < 0) return null;
 
+    const feet = nextPlayer.y + nextPlayer.h;
+    const passSlop = 2;
+
+    if (state.dropThroughIgnoreKey != null) {
+      let ign = null;
+      for (const p of state.platforms) {
+        if (platformMatchesIgnoreKey(p, state.dropThroughIgnoreKey)) {
+          ign = p;
+          break;
+        }
+      }
+      if (!ign) {
+        state.dropThroughIgnoreKey = null;
+      } else if (feet > ign.y + ign.h + passSlop) {
+        state.dropThroughIgnoreKey = null;
+      }
+    }
+
     for (const p of state.platforms) {
+      if (
+        state.dropThroughIgnoreKey != null &&
+        platformMatchesIgnoreKey(p, state.dropThroughIgnoreKey) &&
+        feet <= p.y + p.h + passSlop
+      ) {
+        continue;
+      }
+
       const wasAbove = previousY + nextPlayer.h <= p.y + 1;
       if (!wasAbove) continue;
       if (!intersects(nextPlayer, p)) continue;
@@ -50,11 +88,24 @@
     triggerDropThrough() {
       const { player } = state;
       if (!player.onGround) return;
+      const stoodOn = player.currentPlatform;
       player.onGround = false;
       player.currentPlatform = null;
       player.y += 2;
       player.vy = Math.max(player.vy, 3);
-      state.dropThroughUntil = Date.now() + 220;
+
+      if (DM.platforms?.refresh) {
+        DM.platforms.refresh();
+        state.lastPlatformRefresh = performance.now();
+      }
+
+      if (stoodOn && stoodOn.elementTag === "VIEWPORT_FLOOR") {
+        state.dropThroughIgnoreKey = "VIEWPORT_FLOOR";
+      } else if (stoodOn && stoodOn.source) {
+        state.dropThroughIgnoreKey = stoodOn.source;
+      } else {
+        state.dropThroughIgnoreKey = null;
+      }
     },
 
     tryJump() {

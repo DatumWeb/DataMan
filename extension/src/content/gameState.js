@@ -21,7 +21,8 @@
       skin: "square",
       color: "#4ade80"
     },
-    dropThroughUntil: 0,
+    /** `Element` for the DOM platform being passed through, or `'VIEWPORT_FLOOR'`, or `null`. */
+    dropThroughIgnoreKey: null,
     lastPlatformRefresh: 0,
     running: true,
     /** Throttle passive domain + distance batching (not persisted). */

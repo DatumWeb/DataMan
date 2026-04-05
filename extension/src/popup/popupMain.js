@@ -80,14 +80,17 @@ function renderQuickStats(readable) {
       })
       .catch(() => {});
   } else if (charId === "char-astroman") {
-    container.className = "quick-stats quick-stats-single";
-    container.appendChild(statBox("Screenshots", "…"));
+    container.className = "quick-stats";
+    const shotsBox = statBox("Screenshots taken", "…");
+    container.appendChild(shotsBox);
+    container.appendChild(
+      statBox("Max speed (px/s)", String(Math.round(readable?.maxVelocityPxPerSec ?? 0)))
+    );
     browser.runtime
       .sendMessage({ type: "GET_SCREENSHOT_COUNT" })
       .then((res) => {
         if (res?.ok) {
-          container.textContent = "";
-          container.appendChild(statBox("Screenshots taken", String(res.count)));
+          shotsBox.querySelector(".value").textContent = String(res.count);
         }
       })
       .catch(() => {});

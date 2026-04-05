@@ -42,6 +42,10 @@
     const t = now ?? performance.now();
     const tSec = t / 1000;
 
+    const dt = state.lastFrameMs ? t - state.lastFrameMs : 16.67;
+    state.lastFrameMs = t;
+    state.frameDeltaMs = Math.min(Math.max(dt, 1), 200);
+
     if (t - state.lastPlatformRefresh > 750) {
       platforms.refresh();
       state.lastPlatformRefresh = t;

@@ -64,6 +64,15 @@
           consumedLetters
         })
         .catch(() => {});
+    },
+
+    reportMaxVelocityPxPerSec(speedPxPerSec) {
+      browser.runtime
+        .sendMessage({
+          type: "REPORT_MAX_VELOCITY_PX_PER_SEC",
+          speedPxPerSec
+        })
+        .catch(() => {});
     }
   };
 })(globalThis.DataMan);

@@ -58,6 +58,7 @@ function freshStats() {
     lettersEatenList: [],
     wordBank: [],
     wordsList: [],
+    maxVelocityPxPerSec: 0,
     visitedDomains: [],
     updatedAtMs: Date.now()
   };
@@ -368,6 +369,7 @@ function buildReadableSummary(state) {
     lettersEaten: stats.lettersEaten ?? 0,
     wordBankSize: Array.isArray(stats.wordBank) ? stats.wordBank.length : 0,
     wordsCreated: stats.wordsCreated ?? 0,
+    maxVelocityPxPerSec: stats.maxVelocityPxPerSec ?? 0,
     lettersPreview: Array.isArray(stats.lettersEatenList)
       ? stats.lettersEatenList.slice(-30).join("")
       : "",
@@ -580,6 +582,23 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         (s) => s.characterId === state.activeCharacterId
       );
       return { ok: true, count: myShots.length, totalCount: screenshots.length };
+    }
+
+    if (type === "REPORT_MAX_VELOCITY_PX_PER_SEC") {
+      const speed = Math.round(Number(message.speedPxPerSec));
+      if (!Number.isFinite(speed) || speed < 0) return { ok: false, error: "bad_speed" };
+      let state = await loadState();
+      const cid = state.activeCharacterId;
+      if (cid !== "char-astroman") return { ok: true, skipped: true };
+      const ch = state.characters[cid];
+      if (!ch) return { ok: false, error: "no_active_character" };
+      const prev = ch.stats.maxVelocityPxPerSec || 0;
+      if (speed > prev) {
+        ch.stats.maxVelocityPxPerSec = speed;
+        ch.stats.updatedAtMs = Date.now();
+        await saveState(state);
+      }
+      return { ok: true };
     }
 
     if (type === "LOG_SPIT_WORD") {

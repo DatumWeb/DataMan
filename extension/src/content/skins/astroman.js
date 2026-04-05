@@ -1,6 +1,35 @@
 (function (DM) {
   const { state, runtime } = DM;
 
+  function drawSpeedHud() {
+    if (state.physics.physicsMode !== "space") return;
+    const { ctx } = runtime;
+    const canvas = runtime.canvas;
+    if (!ctx || !canvas) return;
+
+    const spd = Math.round(state.player.spaceSpeedPxPerSec || 0);
+    const text = `${spd} px/s`;
+
+    ctx.save();
+    ctx.font = "12px ui-monospace, monospace";
+    const metrics = ctx.measureText(text);
+    const padX = 12;
+    const padY = 10;
+    const boxW = metrics.width + 16;
+    const boxH = 22;
+    const x = canvas.width - boxW - padX;
+    const y = canvas.height - boxH - padY;
+
+    ctx.fillStyle = "rgba(15, 23, 42, 0.78)";
+    ctx.fillRect(x, y, boxW, boxH);
+
+    ctx.fillStyle = "#e2e8f0";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text, x + 8, y + boxH / 2);
+    ctx.restore();
+  }
+
   const FRAME_W = 192;
   const FRAME_H = 221;
   const TOTAL_FRAMES = 8;
@@ -68,6 +97,7 @@
       ctx.arc(cx, cy, destSize * 0.3, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
+      drawSpeedHud();
       return;
     }
 
@@ -81,6 +111,8 @@
     ctx.rotate(player.angle + Math.PI / 2);
     ctx.drawImage(imgBitmap, sx, 0, FRAME_W, FRAME_H, -half, -half, destSize, destSize);
     ctx.restore();
+
+    drawSpeedHud();
   }
 
   DM.skins = DM.skins || {};

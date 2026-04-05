@@ -13,7 +13,10 @@
       thrusting: false,
       thrustStartT: 0,
       onGround: false,
-      currentPlatform: null
+      currentPlatform: null,
+      /** Instant speed in px/s (space mode). */
+      spaceSpeedPxPerSec: 0,
+      _lastReportedMaxVel: 0
     },
     physics: {
       gravity: 0,
@@ -52,6 +55,9 @@
     /** `Element` for the DOM platform being passed through, or `'VIEWPORT_FLOOR'`, or `null`. */
     dropThroughIgnoreKey: null,
     lastPlatformRefresh: 0,
+    /** Ms since last `requestAnimationFrame` tick — used for px/s velocity. */
+    lastFrameMs: 0,
+    frameDeltaMs: 16.67,
     running: true,
     /** Throttle passive domain + distance batching (not persisted). */
     passiveLogMeta: {

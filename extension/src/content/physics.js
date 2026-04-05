@@ -102,7 +102,7 @@
       }
     }
 
-    const maxV = 8;
+    const maxV = 100;
     const spd = Math.sqrt(player.vx * player.vx + player.vy * player.vy);
     if (spd > maxV) {
       player.vx = (player.vx / spd) * maxV;
@@ -202,6 +202,15 @@
       processInputSpace();
       player.x += player.vx;
       player.y += player.vy;
+
+      const dt = Math.max(state.frameDeltaMs || 16.67, 1);
+      const perFrame = Math.hypot(player.vx, player.vy);
+      const speedPxPerSec = perFrame * (1000 / dt);
+      player.spaceSpeedPxPerSec = speedPxPerSec;
+      if (speedPxPerSec > (player._lastReportedMaxVel || 0)) {
+        player._lastReportedMaxVel = speedPxPerSec;
+        DM.bridge.reportMaxVelocityPxPerSec(speedPxPerSec);
+      }
 
       DM.passiveLog.recordTravel(player.x - prevX);
 

@@ -35,6 +35,7 @@
       "js": [
         "src/content/namespace.js",
         "src/content/config.js",
+        "src/content/characters.js",
         "src/content/gameState.js",
         "src/content/platforms.js",
         "src/content/bridge.js",

@@ -4,65 +4,77 @@ const STORAGE_KEY = "datamanState";
 const SCHEMA_VERSION = 1;
 const MAX_EVENTS_PER_CHARACTER = 800;
 
-const DEFAULT_CHARACTER_ID = "char-default";
-const STICKMAN_CHARACTER_ID = "char-stickman";
-
 /**
- * Mirrors dataman_storage_schema.sql (JSON, not SQLite).
- * - characters[id] = profile + stats + achievements[] + events[]
- * - each event: collectionMode passive | active_extract, eventType, etc.
+ * Character identity registry (background side).
+ * Physics live in content/characters.js — background only stores profile +
+ * stats + events.  This registry defines which characters exist and their
+ * display metadata.  New characters inherit from BASE_PROFILE.
  */
+const BASE_PROFILE = Object.freeze({
+  displayName: "Character",
+  skin: "square",
+  colorHex: "#4ade80"
+});
+
+function profile(overrides) {
+  return Object.freeze({ ...BASE_PROFILE, ...overrides });
+}
+
+const CHARACTER_PROFILES = {
+  "char-default": profile({ displayName: "Runner" }),
+  "char-stickman": profile({
+    displayName: "StickMan",
+    skin: "stickman",
+    colorHex: "#60a5fa"
+  })
+};
+
+function profileFor(id) {
+  return CHARACTER_PROFILES[id] || { ...BASE_PROFILE, displayName: id };
+}
+
+function freshStats() {
+  return {
+    distancePx: 0,
+    totalJumps: 0,
+    totalExtractions: 0,
+    domainsVisitedCount: 0,
+    jumpsFromTag: {},
+    extractionByTag: {},
+    visitedDomains: [],
+    updatedAtMs: Date.now()
+  };
+}
+
 function defaultCharacter(id) {
-  const now = Date.now();
+  const p = profileFor(id);
   return {
     id,
-    displayName: "Default",
-    skin: "square",
-    colorHex: "#4ade80",
-    gravity: 0.65,
-    jumpStrength: 11.5,
-    moveSpeed: 4.2,
-    createdAtMs: now,
-    stats: {
-      distancePx: 0,
-      totalJumps: 0,
-      totalExtractions: 0,
-      domainsVisitedCount: 0,
-      jumpsFromTag: {},
-      extractionByTag: {},
-      visitedDomains: [],
-      updatedAtMs: now
-    },
+    displayName: p.displayName,
+    skin: p.skin,
+    colorHex: p.colorHex,
+    createdAtMs: Date.now(),
+    stats: freshStats(),
     achievements: [],
     events: []
   };
 }
 
 function defaultState() {
-  const id = DEFAULT_CHARACTER_ID;
+  const characters = {};
+  for (const id of Object.keys(CHARACTER_PROFILES)) {
+    characters[id] = defaultCharacter(id);
+  }
   return {
     schemaVersion: SCHEMA_VERSION,
-    activeCharacterId: id,
-    characters: {
-      [id]: defaultCharacter(id),
-      [STICKMAN_CHARACTER_ID]: {
-        ...defaultCharacter(STICKMAN_CHARACTER_ID),
-        displayName: "StickMan",
-        skin: "stickman",
-        colorHex: "#60a5fa",
-        gravity: 0.72,
-        jumpStrength: 12.2,
-        moveSpeed: 3.9
-      }
-    },
-    meta: {
-      storageSelfTestAtMs: null
-    }
+    activeCharacterId: Object.keys(CHARACTER_PROFILES)[0],
+    characters,
+    meta: { storageSelfTestAtMs: null }
   };
 }
 
 function ensureCharacterShape(c) {
-  const base = defaultCharacter(c?.id || DEFAULT_CHARACTER_ID);
+  const base = defaultCharacter(c?.id || Object.keys(CHARACTER_PROFILES)[0]);
   const mergedStats = { ...base.stats, ...(c?.stats || {}) };
   mergedStats.jumpsFromTag = {
     ...(base.stats.jumpsFromTag || {}),
@@ -75,9 +87,14 @@ function ensureCharacterShape(c) {
   mergedStats.visitedDomains = Array.isArray(c?.stats?.visitedDomains)
     ? c.stats.visitedDomains
     : base.stats.visitedDomains || [];
+
+  const p = profileFor(c?.id);
   return {
     ...base,
     ...c,
+    displayName: p.displayName,
+    skin: p.skin,
+    colorHex: p.colorHex,
     stats: mergedStats,
     achievements: Array.isArray(c?.achievements) ? c.achievements : [],
     events: Array.isArray(c?.events) ? c.events : []
@@ -93,19 +110,16 @@ function ensureStateShape(raw) {
   for (const [id, ch] of Object.entries(rawChars)) {
     characters[id] = ensureCharacterShape({ ...ch, id });
   }
-  if (!Object.keys(characters).length) {
-    characters[DEFAULT_CHARACTER_ID] = defaultCharacter(DEFAULT_CHARACTER_ID);
+
+  for (const id of Object.keys(CHARACTER_PROFILES)) {
+    if (!characters[id]) {
+      characters[id] = defaultCharacter(id);
+    }
   }
-  if (!characters[STICKMAN_CHARACTER_ID]) {
-    characters[STICKMAN_CHARACTER_ID] = {
-      ...defaultCharacter(STICKMAN_CHARACTER_ID),
-      displayName: "StickMan",
-      skin: "stickman",
-      colorHex: "#60a5fa",
-      gravity: 0.72,
-      jumpStrength: 12.2,
-      moveSpeed: 3.9
-    };
+
+  if (!Object.keys(characters).length) {
+    const fallback = Object.keys(CHARACTER_PROFILES)[0];
+    characters[fallback] = defaultCharacter(fallback);
   }
 
   let activeCharacterId = raw.activeCharacterId;

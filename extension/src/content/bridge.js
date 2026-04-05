@@ -1,6 +1,7 @@
 /**
  * Talks to the background script (browser.storage lives there).
- * Page world never touches storage APIs for extension data directly.
+ * Physics and visuals always come from the local character registry
+ * (DM.characters) — never from stored data.
  */
 (function (DM) {
   DM.bridge = {
@@ -9,17 +10,7 @@
         const res = await browser.runtime.sendMessage({ type: "GET_STATE" });
         if (!res?.ok || !res.state) return;
         const id = res.state.activeCharacterId;
-        const ch = res.state.characters?.[id];
-        if (!ch) return;
-        const { state } = DM;
-        if (typeof ch.skin === "string") state.visuals.skin = ch.skin;
-        if (typeof ch.colorHex === "string") state.visuals.color = ch.colorHex;
-        const g = Number(ch.physics?.gravity ?? ch.gravity);
-        const j = Number(ch.physics?.jumpStrength ?? ch.jumpStrength);
-        const m = Number(ch.physics?.moveSpeed ?? ch.moveSpeed);
-        if (!Number.isNaN(g)) state.physics.gravity = g;
-        if (!Number.isNaN(j)) state.physics.jumpStrength = j;
-        if (!Number.isNaN(m)) state.physics.moveSpeed = m;
+        DM.characters.applyToState(id);
       } catch {
         /* keep defaults */
       }
@@ -38,10 +29,6 @@
       }
     },
 
-    /**
-     * Fire-and-forget passive row (`collection_mode: passive` in storage).
-     * @param {object} payload eventType, domain, pageUrl, optional bbox, elementTag, extra, …
-     */
     logPassiveEvent(payload) {
       browser.runtime
         .sendMessage({
@@ -51,7 +38,6 @@
         .catch(() => {});
     },
 
-    /** Updates `stats.distancePx` only — does not append an event row. */
     addDistancePx(deltaPx) {
       browser.runtime
         .sendMessage({
@@ -61,10 +47,6 @@
         .catch(() => {});
     },
 
-    /**
-     * Fire-and-forget active extraction row.
-     * Intended to map to SQL: data_collection_events(collection_mode='active_extract').
-     */
     logActiveExtractEvent(payload) {
       browser.runtime
         .sendMessage({

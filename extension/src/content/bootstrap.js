@@ -2,6 +2,8 @@
   DM.bootstrap = async function bootstrap() {
     console.log("[DataMan] content script loaded on", location.hostname);
 
+    DM.characters.applyToState(DM.characters.ids()[0]);
+
     DM.overlay.install();
     DM.input.wire();
     DM.physics.spawnPlayerTopCenter();

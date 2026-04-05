@@ -13,14 +13,15 @@
       currentPlatform: null
     },
     physics: {
-      gravity: 0.65,
-      jumpStrength: 11.5,
-      moveSpeed: 4.2
+      gravity: 0,
+      jumpStrength: 0,
+      moveSpeed: 0
     },
     visuals: {
       skin: "square",
       color: "#4ade80"
     },
+    activeCharacterId: null,
     /** `Element` for the DOM platform being passed through, or `'VIEWPORT_FLOOR'`, or `null`. */
     dropThroughIgnoreKey: null,
     lastPlatformRefresh: 0,

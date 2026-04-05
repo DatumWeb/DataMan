@@ -1,4 +1,20 @@
 (function (DM) {
+  async function syncWithRetry(maxAttempts) {
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const res = await browser.runtime.sendMessage({ type: "GET_STATE" });
+        if (res?.ok && res.state?.activeCharacterId) {
+          DM.characters.applyToState(res.state.activeCharacterId);
+          return true;
+        }
+      } catch { /* background not ready yet */ }
+      if (i < maxAttempts - 1) {
+        await new Promise((r) => setTimeout(r, 300 * (i + 1)));
+      }
+    }
+    return false;
+  }
+
   DM.bootstrap = async function bootstrap() {
     console.log("[DataMan] content script loaded on", location.hostname);
 
@@ -16,10 +32,9 @@
       void DM.skins.astroman.preload();
     }
 
-    await DM.bridge.syncCharacterFromBackground();
+    await syncWithRetry(5);
     DM.render.startLoop();
 
-    // If the popup switches `activeCharacterId`, resync visuals/physics live.
     if (!DM.bootstrap._wiredStorageListener) {
       DM.bootstrap._wiredStorageListener = true;
       const STORAGE_KEY = "datamanState";

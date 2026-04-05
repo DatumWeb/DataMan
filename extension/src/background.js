@@ -29,6 +29,11 @@ const CHARACTER_PROFILES = {
     skin: "stickman",
     colorHex: "#60a5fa"
   }),
+  "char-snake": profile({
+    displayName: "SnakeMan",
+    skin: "snake",
+    colorHex: "#22c55e"
+  }),
   "char-astroman": profile({
     displayName: "AstroMan",
     skin: "astroman",
@@ -45,9 +50,11 @@ function freshStats() {
     distancePx: 0,
     totalJumps: 0,
     totalExtractions: 0,
+    lettersEaten: 0,
     domainsVisitedCount: 0,
     jumpsFromTag: {},
     extractionByTag: {},
+    lettersEatenList: [],
     visitedDomains: [],
     updatedAtMs: Date.now()
   };
@@ -197,6 +204,16 @@ function applyPassiveEventEffects(ch, row) {
       ch.stats.visitedDomains.push(host);
       ch.stats.domainsVisitedCount = ch.stats.visitedDomains.length;
     }
+  } else if (t === "letter_eaten") {
+    ch.stats.lettersEaten = (ch.stats.lettersEaten || 0) + 1;
+    const letter = row.extra?.char || "?";
+    ch.stats.lettersEatenList = Array.isArray(ch.stats.lettersEatenList)
+      ? ch.stats.lettersEatenList
+      : [];
+    ch.stats.lettersEatenList.push(letter);
+    if (ch.stats.lettersEatenList.length > 200) {
+      ch.stats.lettersEatenList = ch.stats.lettersEatenList.slice(-200);
+    }
   }
 }
 
@@ -337,6 +354,10 @@ function buildReadableSummary(state) {
     totalJumps: stats.totalJumps ?? 0,
     distancePx: stats.distancePx ?? 0,
     totalExtractions: stats.totalExtractions ?? 0,
+    lettersEaten: stats.lettersEaten ?? 0,
+    lettersPreview: Array.isArray(stats.lettersEatenList)
+      ? stats.lettersEatenList.slice(-30).join("")
+      : "",
     domainsVisitedCount: stats.domainsVisitedCount ?? visited.length,
     visitedDomainsPreview: visited.slice(0, 6).join(", ") || "—",
     topJumpSourceTag: topJumpTag || "—",

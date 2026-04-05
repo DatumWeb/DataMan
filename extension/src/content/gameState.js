@@ -22,7 +22,9 @@
       physicsMode: "platformer",
       thrustPower: 0,
       rotateSpeed: 0,
-      brakeRate: 0
+      brakeRate: 0,
+      snakeSpeed: 0,
+      snakeCellSize: 0
     },
     visuals: {
       skin: "square",
@@ -33,6 +35,14 @@
       selecting: false,
       startX: 0,
       startY: 0
+    },
+    snake: {
+      segments: [],
+      direction: "right",
+      nextDirection: "right",
+      lastTickMs: 0,
+      alive: true,
+      lettersEaten: 0
     },
     /** `Element` for the DOM platform being passed through, or `'VIEWPORT_FLOOR'`, or `null`. */
     dropThroughIgnoreKey: null,

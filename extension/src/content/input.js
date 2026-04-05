@@ -35,20 +35,31 @@
 
           state.keys.add(event.code);
 
-          const isSpaceMode = state.physics.physicsMode === "space";
+          const mode = state.physics.physicsMode;
 
-          if (!isSpaceMode && event.code === "Space") {
-            DM.physics.tryJump();
-          }
-          if (!isSpaceMode && (event.code === "ArrowDown" || event.code === "KeyS")) {
-            DM.physics.triggerDropThrough();
-          }
-          if (!isSpaceMode && (event.code === "ArrowUp" || event.code === "KeyW")) {
-            DM.activeExtract.tryExtract(event.code);
+          if (mode === "platformer") {
+            if (event.code === "Space") DM.physics.tryJump();
+            if (event.code === "ArrowDown" || event.code === "KeyS")
+              DM.physics.triggerDropThrough();
+            if (event.code === "ArrowUp" || event.code === "KeyW")
+              DM.activeExtract.tryExtract(event.code);
           }
 
-          if (isSpaceMode && event.code === "Space") {
+          if (mode === "space" && event.code === "Space") {
             DM.screenshot.beginSelection();
+          }
+
+          if (mode === "snake") {
+            const OPPOSITES = { up: "down", down: "up", left: "right", right: "left" };
+            const sn = state.snake;
+            let dir = null;
+            if (event.code === "ArrowUp" || event.code === "KeyW") dir = "up";
+            if (event.code === "ArrowDown" || event.code === "KeyS") dir = "down";
+            if (event.code === "ArrowLeft" || event.code === "KeyA") dir = "left";
+            if (event.code === "ArrowRight" || event.code === "KeyD") dir = "right";
+            if (dir && OPPOSITES[dir] !== sn.direction) {
+              sn.nextDirection = dir;
+            }
           }
         },
         true

@@ -13,10 +13,11 @@
     skin: "square",
     color: "#4ade80",
     displayName: "Character",
-    // Space-mode fields (ignored by platformer characters)
     thrustPower: 0,
     rotateSpeed: 0,
-    brakeRate: 0
+    brakeRate: 0,
+    snakeSpeed: 0,
+    snakeCellSize: 0
   });
 
   function defineCharacter(overrides) {
@@ -36,6 +37,17 @@
       gravity: 0.1,
       jumpStrength: 7,
       moveSpeed: 2
+    }),
+    "char-snake": defineCharacter({
+      displayName: "SnakeMan",
+      skin: "snake",
+      color: "#22c55e",
+      physicsMode: "snake",
+      gravity: 0,
+      jumpStrength: 0,
+      moveSpeed: 0,
+      snakeSpeed: 7,
+      snakeCellSize: 14
     }),
     "char-astroman": defineCharacter({
       displayName: "AstroMan",
@@ -78,8 +90,16 @@
       state.physics.thrustPower = def.thrustPower;
       state.physics.rotateSpeed = def.rotateSpeed;
       state.physics.brakeRate = def.brakeRate;
+      state.physics.snakeSpeed = def.snakeSpeed;
+      state.physics.snakeCellSize = def.snakeCellSize;
       state.visuals.skin = def.skin;
       state.visuals.color = def.color;
+
+      if (def.physicsMode === "snake" && DM.physics?.initSnake) {
+        if (!state.snake.segments.length) {
+          DM.physics.initSnake();
+        }
+      }
     }
   };
 })(globalThis.DataMan);

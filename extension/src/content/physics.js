@@ -129,7 +129,7 @@
     },
 
     triggerDropThrough() {
-      if (state.physics.physicsMode === "space") return;
+      if (state.physics.physicsMode !== "platformer") return;
       const { player } = state;
       if (!player.onGround) return;
       const stoodOn = player.currentPlatform;
@@ -153,7 +153,7 @@
     },
 
     tryJump() {
-      if (state.physics.physicsMode === "space") return;
+      if (state.physics.physicsMode !== "platformer") return;
       const { player, physics } = state;
       if (!player.onGround) return;
       const jumpingFrom = player.currentPlatform;
@@ -213,8 +213,97 @@
       if (player.y > vh) player.y = -player.h;
     },
 
+    initSnake() {
+      const sn = state.snake;
+      const cellSize = state.physics.snakeCellSize || 14;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const startX = Math.floor(vw / 2 / cellSize) * cellSize;
+      const startY = Math.floor(vh / 2 / cellSize) * cellSize;
+      sn.segments = [
+        { x: startX, y: startY },
+        { x: startX - cellSize, y: startY },
+        { x: startX - cellSize * 2, y: startY }
+      ];
+      sn.direction = "right";
+      sn.nextDirection = "right";
+      sn.alive = true;
+      sn.lastTickMs = performance.now();
+      sn.lettersEaten = 0;
+
+      state.player.x = startX;
+      state.player.y = startY;
+    },
+
+    updateSnake() {
+      const sn = state.snake;
+      if (!sn.alive) {
+        if (state.keys.has("Space")) {
+          DM.physics.initSnake();
+        }
+        return;
+      }
+
+      const cellSize = state.physics.snakeCellSize || 14;
+      const tickInterval = 1000 / (state.physics.snakeSpeed || 7);
+      const now = performance.now();
+
+      if (now - sn.lastTickMs < tickInterval) return;
+      sn.lastTickMs = now;
+
+      sn.direction = sn.nextDirection;
+      const head = sn.segments[0];
+      let nx = head.x;
+      let ny = head.y;
+
+      if (sn.direction === "up") ny -= cellSize;
+      else if (sn.direction === "down") ny += cellSize;
+      else if (sn.direction === "left") nx -= cellSize;
+      else if (sn.direction === "right") nx += cellSize;
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      if (nx < 0) nx = Math.floor((vw - cellSize) / cellSize) * cellSize;
+      if (nx >= vw) nx = 0;
+      if (ny < 0) ny = Math.floor((vh - cellSize) / cellSize) * cellSize;
+      if (ny >= vh) ny = 0;
+
+      for (let i = 0; i < sn.segments.length; i++) {
+        if (sn.segments[i].x === nx && sn.segments[i].y === ny) {
+          sn.alive = false;
+          return;
+        }
+      }
+
+      const newHead = { x: nx, y: ny };
+      sn.segments.unshift(newHead);
+
+      const eatResult = DM.snakeFood?.tryEat(nx, ny) ?? null;
+
+      if (eatResult) {
+        sn.lettersEaten++;
+
+        DM.bridge.logPassiveEvent({
+          eventType: "letter_eaten",
+          domain: location.hostname,
+          pageUrl: location.href,
+          elementTag: eatResult.elementTag,
+          selectorGuess: eatResult.selector,
+          textPreview: eatResult.textPreview,
+          extra: { char: eatResult.char }
+        });
+      } else {
+        sn.segments.pop();
+      }
+
+      state.player.x = nx;
+      state.player.y = ny;
+    },
+
     update() {
-      if (state.physics.physicsMode === "space") {
+      if (state.physics.physicsMode === "snake") {
+        DM.physics.updateSnake();
+      } else if (state.physics.physicsMode === "space") {
         DM.physics.updateSpace();
       } else {
         DM.physics.updatePlatformer();

@@ -2,6 +2,11 @@
   DM.skins = DM.skins || {};
 
   DM.skins.draw = function draw(skin, tSec) {
+    if (skin === "snake" && DM.skins.snake?.draw) {
+      DM.skins.snake.draw(tSec);
+      return;
+    }
+
     if (skin === "astroman" && DM.skins.astroman?.draw) {
       DM.skins.astroman.draw(tSec);
       return;

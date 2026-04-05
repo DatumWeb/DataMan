@@ -2,7 +2,7 @@ const CHARACTER_TILES = [
   { characterId: "char-default", name: "Runner" },
   { characterId: "char-stickman", name: "StickMan" },
   { characterId: "char-astroman", name: "AstroMan" },
-  { characterId: "char-default", name: "Runner 3" }
+  { characterId: "char-snake", name: "SnakeMan" }
 ];
 
 let selectedCharacterIdx = 0;

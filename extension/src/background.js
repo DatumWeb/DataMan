@@ -641,6 +641,60 @@ browser.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       };
     }
 
+    if (type === "GET_ALL_DATA") {
+      const state = await loadState();
+      const chars = {};
+      for (const [cid, ch] of Object.entries(state.characters)) {
+        chars[cid] = {
+          id: ch.id,
+          displayName: ch.displayName,
+          skin: ch.skin,
+          colorHex: ch.colorHex,
+          stats: ch.stats,
+          events: Array.isArray(ch.events) ? ch.events : []
+        };
+      }
+      return {
+        ok: true,
+        activeCharacterId: state.activeCharacterId,
+        characters: chars
+      };
+    }
+
+    if (type === "CLEAR_DATA") {
+      const scope = message.scope || "character";
+      const clearScreenshots = !!message.clearScreenshots;
+      let state = await loadState();
+
+      if (scope === "all") {
+        for (const cid of Object.keys(state.characters)) {
+          state.characters[cid].events = [];
+          state.characters[cid].stats = freshStats();
+        }
+      } else {
+        const cid = state.activeCharacterId;
+        if (state.characters[cid]) {
+          state.characters[cid].events = [];
+          state.characters[cid].stats = freshStats();
+        }
+      }
+
+      await saveState(state);
+
+      if (clearScreenshots) {
+        if (scope === "all") {
+          await browser.storage.local.set({ [SCREENSHOTS_KEY]: [] });
+        } else {
+          const stored = await browser.storage.local.get(SCREENSHOTS_KEY);
+          let shots = Array.isArray(stored[SCREENSHOTS_KEY]) ? stored[SCREENSHOTS_KEY] : [];
+          shots = shots.filter((s) => s.characterId !== state.activeCharacterId);
+          await browser.storage.local.set({ [SCREENSHOTS_KEY]: shots });
+        }
+      }
+
+      return { ok: true };
+    }
+
     if (type === "GET_ACTIVE_CHARACTER_EVENTS") {
       const state = await loadState();
       const id = state.activeCharacterId;

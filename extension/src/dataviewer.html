@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>DataMan — Data Viewer</title>
+    <link rel="stylesheet" href="dataviewer.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>DataMan Data Viewer</h1>
+    </header>
+
+    <main class="container">
+      <!-- Filters -->
+      <section class="filters-bar">
+        <div class="filter-group">
+          <label for="filter-character">Character</label>
+          <select id="filter-character">
+            <option value="all">All characters</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-type">Data type</label>
+          <select id="filter-type">
+            <option value="all">All types</option>
+            <option value="events">Events</option>
+            <option value="eaten-letters">Eaten letters (SnakeMan)</option>
+            <option value="word-bank">Word bank (SnakeMan)</option>
+            <option value="words-created">Words created (SnakeMan)</option>
+            <option value="screenshots">Screenshots (AstroMan)</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-mode">Collection mode</label>
+          <select id="filter-mode">
+            <option value="all">All modes</option>
+            <option value="passive">Passive</option>
+            <option value="active_extract">Active extract</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="filter-search">Search</label>
+          <input id="filter-search" type="text" placeholder="domain, tag, text…" />
+        </div>
+      </section>
+
+      <!-- Actions -->
+      <section class="actions-bar">
+        <div class="action-left">
+          <button id="btn-refresh" type="button">Refresh</button>
+          <span id="result-count" class="muted"></span>
+        </div>
+        <div class="action-right">
+          <button id="btn-export-json" type="button">Export JSON</button>
+          <button id="btn-export-csv" type="button">Export CSV</button>
+          <button id="btn-clear" type="button" class="btn-danger">Clear data…</button>
+        </div>
+      </section>
+
+      <!-- Stats summary -->
+      <section id="stats-summary" class="stats-summary"></section>
+
+      <!-- Data table -->
+      <section class="table-wrap">
+        <table id="data-table">
+          <thead>
+            <tr id="table-head"></tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div id="empty-msg" class="empty-msg">Select filters and click Refresh to load data.</div>
+      </section>
+
+      <!-- Screenshot gallery (shown when type=screenshots) -->
+      <section id="screenshot-gallery" class="screenshot-gallery" style="display:none"></section>
+    </main>
+
+    <!-- Clear confirmation dialog -->
+    <dialog id="clear-dialog" class="clear-dialog">
+      <h2>Clear data</h2>
+      <p>Choose what to clear:</p>
+      <div class="dialog-options">
+        <label><input type="radio" name="clear-scope" value="character" checked /> Active character only</label>
+        <label><input type="radio" name="clear-scope" value="all" /> All characters</label>
+      </div>
+      <div class="dialog-options">
+        <label><input type="checkbox" id="clear-screenshots" /> Also clear screenshots</label>
+      </div>
+      <p class="muted">This cannot be undone.</p>
+      <div class="dialog-actions">
+        <button id="clear-cancel" type="button">Cancel</button>
+        <button id="clear-confirm" type="button" class="btn-danger">Clear</button>
+      </div>
+    </dialog>
+
+    <script src="dataviewer/dataviewer.js"></script>
+  </body>
+</html>

@@ -499,4 +499,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   renderActionButtons();
   await refreshSummary();
   renderEmpty("Pick a view below to inspect data.");
+
+  const dvBtn = el("btn-open-dataviewer");
+  if (dvBtn) {
+    dvBtn.addEventListener("click", () => {
+      browser.tabs.create({ url: browser.runtime.getURL("src/dataviewer.html") });
+    });
+  }
 });

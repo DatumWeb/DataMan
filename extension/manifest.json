@@ -25,6 +25,7 @@
         "assets/StickmanPack/Run/thinRunSheet.png",
         "assets/StickmanPack/Punch/thickPunchSheet.png",
         "assets/StickmanPack/Punch/thinPunchSheet.png",
+        "assets/StickmanPack/chargingUpYellow.png",
         "assets/AstroMan/ezgif.com-gif-to-sprite-converter.png"
       ],
       "matches": ["<all_urls>"]

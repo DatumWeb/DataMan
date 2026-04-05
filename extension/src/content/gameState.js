@@ -66,6 +66,13 @@
       distanceBuffer: 0,
       /** Avoid duplicate `domain_visit` rows for the same host in one load. */
       domainVisitSentFor: null
+    },
+    /** Active extract cast (platformer): visual + delayed log. */
+    extractCast: {
+      active: false,
+      startMs: 0,
+      endMs: 0,
+      payload: null
     }
   };
 

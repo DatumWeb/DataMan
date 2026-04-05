@@ -1,11 +1,11 @@
 /**
  * Active extract (on-demand, e.g. Up Arrow / W).
- *
- * TODO (later): add a short "cast time" (~1s) + animation before sending the extract event.
- * For now: immediate extract logging.
+ * StickMan: ~1.5s cast with charging VFX, then the extract event is logged.
  */
 (function (DM) {
   const { state, bridge, util } = DM;
+
+  const EXTRACT_DURATION_MS = 1500;
 
   function pageDomain() {
     try {
@@ -29,20 +29,23 @@
     return raw.slice(0, 220);
   }
 
+  function fireExtract(payload) {
+    bridge.logActiveExtractEvent(payload);
+  }
+
   DM.activeExtract = {
-    /**
-     * Attempts to extract from the platform the player is currently standing on.
-     * @param {string} triggerKey
-     */
+    EXTRACT_DURATION_MS,
+
     tryExtract(triggerKey) {
       const platform = state.player.currentPlatform;
       if (!platform) return;
       if (platform.elementTag === "VIEWPORT_FLOOR") return;
+      if (state.extractCast.active) return;
 
       const el = platform.source || null;
       const textPreview = getTextPreview(el);
 
-      bridge.logActiveExtractEvent({
+      const payload = {
         domain: pageDomain(),
         pageUrl: pageUrl(),
         elementTag: platform.elementTag || "UNKNOWN",
@@ -59,8 +62,31 @@
           hasSource: !!el,
           textLen: textPreview ? textPreview.length : 0
         }
-      });
+      };
+
+      if (state.visuals.skin === "stickman") {
+        const now = performance.now();
+        state.extractCast.active = true;
+        state.extractCast.startMs = now;
+        state.extractCast.endMs = now + EXTRACT_DURATION_MS;
+        state.extractCast.payload = payload;
+      } else {
+        fireExtract(payload);
+      }
+    },
+
+    tick() {
+      if (!state.extractCast.active) return;
+      const now = performance.now();
+      if (now < state.extractCast.endMs) return;
+
+      const payload = state.extractCast.payload;
+      state.extractCast.active = false;
+      state.extractCast.startMs = 0;
+      state.extractCast.endMs = 0;
+      state.extractCast.payload = null;
+
+      if (payload) fireExtract(payload);
     }
   };
 })(globalThis.DataMan);
-

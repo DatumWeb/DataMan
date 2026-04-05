@@ -193,6 +193,10 @@
       if (player.y > vh + 200) {
         DM.physics.spawnPlayerTopCenter();
       }
+
+      if (DM.activeExtract?.tick) {
+        DM.activeExtract.tick();
+      }
     },
 
     updateSpace() {

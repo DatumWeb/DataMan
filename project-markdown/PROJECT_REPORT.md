@@ -1,10 +1,9 @@
-# DataMan Project Report Template
+# DataMan Project Report
 
 ## Project Summary
 DataMan is a browser extension project that turns web-page interaction into game mechanics while collecting data and screenshots. This creates a fun and engaging way to interact with the web while also making it more intentinal. There is a man that platforms on the web and collects data, a astroman that takes screenshots, and a snake that eats food and spits messages.
 
 ## Diagrams
-> Replace with your final architecture and flow diagrams.
 
 - [ ] ![System Architecture Diagram](./drawSQL-image-export-2026-04-15.jpg)
 - [ ] ![Event and data flow](./event-data-flow.drawio.png)
@@ -54,8 +53,3 @@ I thought it would be a fun way to navigate the web and collect data about my in
 
 ---
 
-## Final Checklist Before Submission
-- [ ] Rewrote summary to match final scope.
-- [ ] Added real diagrams and demo link/GIF.
-- [ ] Replaced placeholders with project-specific technical details.
-- [ ] Verified AI usage section reflects actual workflow and course policy.

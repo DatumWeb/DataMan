@@ -15,9 +15,6 @@ DataMan is a browser extension project that turns web-page interaction into game
 
 
 
-- Demo video link: `[Add YouTube/Drive link here](https://example.com)`
-- Demo GIF: `![Demo GIF](./assets/demo.gif)`
-
 ## What Did You Learn?
 1. The **basics of building a browser extension**: what a content script is versus the background, how **permissions** gate what you are allowed to do, and how you load HTML/JS/CSS into the project. The **`manifest.json`** is a concrete example of that—it is the file that ties the pieces together (scripts, icons, optional `web_accessible_resources`, and so on), and you learn quickly that if the manifest is wrong, nothing else runs the way you expect.
 2. **Game-style code** is a separate skill from “normal” app logic: you keep a **game loop**, update **physics/state**, then **draw**. **Sprite sheets** are a good example—one image becomes many frames, so you write code to slice the sheet, pick the right frame for idle/run/jump, and sync animation timing with velocity so movement looks believable.

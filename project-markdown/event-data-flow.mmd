@@ -1,0 +1,18 @@
+%% DataMan — event / data flow
+%% Import: open https://mermaid.live → paste this file → Actions → Export PNG or SVG
+
+flowchart LR
+  DOM["Web page / DOM"]
+  CS["Content scripts\n(bridge, physics, passive log)"]
+  MSG["runtime.sendMessage"]
+  BG["Background\nbackground.js"]
+  S1["storage.local\ndatamanState"]
+  S2["storage.local\ndatamanScreenshots"]
+  PU["Popup / options"]
+
+  DOM <--> CS
+  CS -->|"passive + extract +\ndistance, max vel, etc."| MSG
+  MSG --> BG
+  BG --> S1
+  BG --> S2
+  PU -->|"GET_STATE, CLEAR,\nscreenshots…"| BG

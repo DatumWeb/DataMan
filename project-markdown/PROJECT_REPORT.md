@@ -10,9 +10,9 @@ DataMan is a browser extension project that turns web-page interaction into game
 
 ## Demo Video or GIF
 
-- Demo GIF 1: `![DataMan Demo: First 30 Seconds](./DataManFirst30.gif)`
-- Demo GIF 2: `![DataMan Demo: Last 30 Seconds](./DataManLast30.gif)`
+![DataMan Demo: First 30 Seconds](./DataManFirst30.gif)
 
+![DataMan Demo: Last 30 Seconds](./DataManLast30.gif)
 
 
 ## What Did You Learn?
